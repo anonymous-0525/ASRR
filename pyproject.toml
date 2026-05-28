@@ -3,14 +3,23 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "asrr-core"
+name = "asrr"
 version = "0.1.0"
-description = "Policy-agnostic core components for Action Sequence Residual Refinement."
+description = "Action Sequence Residual Refinement for robot policies"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-  "torch>=2.0",
+    "torch>=2.0",
 ]
 
-[tool.setuptools]
-packages = ["asrr_core"]
+[project.optional-dependencies]
+jax = [
+    "jax",
+    "flax",
+]
+dev = [
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+include = ["asrr_core*", "examples*"]

@@ -58,7 +58,7 @@ class StaticSiteTests(unittest.TestCase):
             "Ning" + "xin Su",
         ]
         matcher = re.compile("|".join(patterns), flags=re.IGNORECASE)
-        checked_suffixes = {".html", ".css", ".js", ".md", ".py", ".toml"}
+        checked_suffixes = {".html", ".css", ".js", ".md", ".py", ".toml", ".svg"}
         offenders = []
 
         for path in ROOT.rglob("*"):
@@ -78,10 +78,15 @@ class StaticSiteTests(unittest.TestCase):
             DOCS / "static/css/site.css",
             DOCS / "static/js/rescue-videos.js",
             DOCS / "static/files/asrr_paper.pdf",
-            DOCS / "static/images/asrr_simple_overview.png",
-            DOCS / "static/images/asrr_refiner_design.png",
-            DOCS / "static/images/hero_rescue_actual_primary.png",
+            DOCS / "static/images/intro_graph.png",
+            DOCS / "static/images/structure_graph.png",
+            DOCS / "static/images/hero_rescue_refined_primary.png",
+            DOCS / "static/images/goal_rescue_combined.svg",
             DOCS / "static/images/asrr_parameter_efficiency_summary.png",
+            DOCS / "static/images/act_ablation_compact.png",
+            DOCS / "static/images/dp_ablation_compact.png",
+            DOCS / "static/images/pi05_alpha_curve.png",
+            DOCS / "static/images/octo_structure_ablation_bar.png",
             DOCS / "static/videos/vla_rescues/octo_goal_primary_base_rot180.mp4",
             DOCS / "static/videos/vla_rescues/octo_goal_primary_refined_rot180.mp4",
             DOCS / "static/videos/vla_rescues/octo_goal_wrist_base_rot180.mp4",

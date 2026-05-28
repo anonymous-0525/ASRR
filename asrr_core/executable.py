@@ -9,16 +9,16 @@ import torch.nn as nn
 class ExecutableStepResidualAdapter(nn.Module):
     """Bounded residual refiner for policies that execute only the first action.
 
-    This is the policy-agnostic version of the Simple-ASRR structure used in the
-    latest SmolVLA and pi0.5-style experiments:
+    This is the policy-agnostic version of the Simple-ASRR structure used by
+    SmolVLA-style and pi0.5-style receding-horizon policies:
 
         concat(base_action[:, :input_horizon], optional low-dimensional state)
           -> LayerNorm -> MLP -> tanh(delta) * sigmoid(gate) * max_delta
 
     The module returns a full action chunk with the same shape as ``base_action``,
     but only ``delta[:, 0]`` is non-zero.  Parameter names intentionally match the
-    older ``SimpleExecutableResidualAdapter`` implementation so saved state_dict
-    checkpoints remain loadable.
+    ``SimpleExecutableResidualAdapter`` naming convention so saved state_dict
+    checkpoints can be reused across wrappers.
     """
 
     def __init__(

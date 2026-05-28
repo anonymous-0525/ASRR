@@ -13,12 +13,12 @@
   <meta property="og:site_name" content="ASRR">
   <meta property="og:title" content="ASRR: Action Sequence Residual Refinement">
   <meta property="og:description" content="A lightweight offline refiner for adapting frozen robot policies without updating the base model.">
-  <meta property="og:image" content="static/images/hero_rescue_actual_primary.png">
+  <meta property="og:image" content="static/images/hero_rescue_refined_primary.png">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ASRR: Action Sequence Residual Refinement">
   <meta name="twitter:description" content="Frozen base policy, residual action-sequence refiner, policy-native execution.">
-  <meta name="twitter:image" content="static/images/hero_rescue_actual_primary.png">
+  <meta name="twitter:image" content="static/images/hero_rescue_refined_primary.png">
 
   <title>ASRR | Project Page</title>
 
@@ -118,9 +118,9 @@
             <li>Small trainable module: refiner sizes from kiloparameters to a few megabytes.</li>
           </ul>
         </div>
-        <figure class="media-frame">
-          <img src="static/images/asrr_simple_overview.png" alt="ASRR overview pipeline from frozen base policy to refined executed prefix">
-          <figcaption>ASRR inserts a sequence editor after the frozen base action proposal.</figcaption>
+        <figure class="media-frame media-frame--paper">
+          <img src="static/images/intro_graph.png" alt="ASRR introduction figure with language, image, robot state, base failure, expert, and refined success">
+          <figcaption>Paper introduction figure: ASRR refines useful but imperfect action sequences into successful rollouts.</figcaption>
         </figure>
       </div>
     </section>
@@ -135,8 +135,8 @@
           </p>
         </div>
         <figure class="media-frame media-frame--wide">
-          <img src="static/images/asrr_refiner_design.png" alt="Action Sequence Refiner architecture with base sequence, temporal encoder, context fusion, residual decoder, mask and scale">
-          <figcaption>Action Sequence Refiner: one residual operator with policy-specific context and execution constraints.</figcaption>
+          <img src="static/images/structure_graph.png" alt="ASRR structure figure covering frozen bases, residual refiner, action comparison, rollout composition, and policy instantiations">
+          <figcaption>Paper method figure: ASRR keeps the base frozen and learns a compact residual action-sequence refiner.</figcaption>
         </figure>
         <div class="feature-grid">
           <article class="feature-card">
@@ -198,81 +198,266 @@
         </figure>
 
         <div class="table-wrap">
-          <table>
+          <table class="main-results-table">
+            <caption>
+              Table 2. Main ASRR results. Base and ASRR columns are percentages,
+              except PushT where they report normalized coverage.
+            </caption>
             <thead>
               <tr>
                 <th>Family</th>
+                <th>Method</th>
                 <th>Task / suite</th>
                 <th>Base</th>
                 <th>ASRR</th>
-                <th>Gain</th>
-                <th>Refiner size</th>
+                <th>&Delta;</th>
+                <th>Rescue</th>
+                <th>Harm</th>
+                <th>Params: base / refiner</th>
               </tr>
             </thead>
             <tbody>
               <tr>
+                <td>Policy</td>
                 <td>ACT</td>
-                <td>Insertion</td>
-                <td>34.0%</td>
-                <td>55.7%</td>
+                <td>Insertion (300)</td>
+                <td>34.0</td>
+                <td>55.7</td>
                 <td>+21.7 pp</td>
-                <td>159.5k</td>
+                <td>90</td>
+                <td>25</td>
+                <td>83.92M / 159.5k</td>
               </tr>
               <tr>
+                <td>Policy</td>
                 <td>ACT</td>
-                <td>Transfer cube</td>
-                <td>89.3%</td>
-                <td>95.3%</td>
+                <td>Transfer cube (300)</td>
+                <td>89.3</td>
+                <td>95.3</td>
                 <td>+6.0 pp</td>
-                <td>159.5k</td>
+                <td>30</td>
+                <td>12</td>
+                <td>83.92M / 159.5k</td>
               </tr>
               <tr>
-                <td>Diffusion Policy</td>
-                <td>Square mean</td>
-                <td>81.6%</td>
-                <td>92.0%</td>
+                <td>Policy</td>
+                <td>DP</td>
+                <td>Square (250)</td>
+                <td>81.6</td>
+                <td>92.0</td>
                 <td>+10.4 pp</td>
-                <td>681.7k</td>
+                <td>38</td>
+                <td>12</td>
+                <td>65.88M / 681.7k</td>
               </tr>
               <tr>
-                <td>Diffusion Policy</td>
-                <td>Transport mean</td>
-                <td>76.0%</td>
-                <td>84.0%</td>
+                <td>Policy</td>
+                <td>DP</td>
+                <td>Transport (250)</td>
+                <td>76.0</td>
+                <td>84.0</td>
                 <td>+8.0 pp</td>
-                <td>709.1k</td>
+                <td>39</td>
+                <td>19</td>
+                <td>66.92M / 709.1k</td>
               </tr>
               <tr>
+                <td>Policy</td>
+                <td>DP</td>
+                <td>PushT (300)</td>
+                <td>79.1</td>
+                <td>82.0</td>
+                <td>+3.0</td>
+                <td>129</td>
+                <td>101</td>
+                <td>65.78M / 673.8k</td>
+              </tr>
+              <tr>
+                <td>Policy</td>
+                <td>DP</td>
+                <td>Tool-Hang (200)</td>
+                <td>66.0</td>
+                <td>79.5</td>
+                <td>+13.5 pp</td>
+                <td>48</td>
+                <td>21</td>
+                <td>66.74M / 697.1k</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
                 <td>OpenVLA-OFT</td>
-                <td>LIBERO aggregate</td>
-                <td>1916 / 2000</td>
-                <td>1929 / 2000</td>
-                <td>+13 episodes</td>
-                <td>7.66M</td>
+                <td>LIBERO-Spatial (500)</td>
+                <td>92.8</td>
+                <td>93.0</td>
+                <td>+0.2 pp</td>
+                <td>10</td>
+                <td>9</td>
+                <td>7.54B / 7.66M</td>
               </tr>
               <tr>
-                <td>Octo</td>
-                <td>LIBERO-10</td>
-                <td>51.0%</td>
-                <td>61.6%</td>
+                <td>VLA</td>
+                <td>OpenVLA-OFT</td>
+                <td>LIBERO-Object (500)</td>
+                <td>98.8</td>
+                <td>99.4</td>
+                <td>+0.6 pp</td>
+                <td>5</td>
+                <td>2</td>
+                <td>7.54B / 7.66M</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
+                <td>OpenVLA-OFT</td>
+                <td>LIBERO-Goal (500)</td>
+                <td>96.4</td>
+                <td>97.4</td>
+                <td>+1.0 pp</td>
+                <td>10</td>
+                <td>5</td>
+                <td>7.54B / 7.66M</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
+                <td>OpenVLA-OFT</td>
+                <td>LIBERO-10 (500)</td>
+                <td>95.2</td>
+                <td>96.0</td>
+                <td>+0.8 pp</td>
+                <td>11</td>
+                <td>7</td>
+                <td>7.54B / 7.66M</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
+                <td>Octo*</td>
+                <td>LIBERO-Spatial (500)</td>
+                <td>84.6</td>
+                <td>87.0</td>
+                <td>+2.4 pp</td>
+                <td>32</td>
+                <td>20</td>
+                <td>202.46M / 707k</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
+                <td>Octo*</td>
+                <td>LIBERO-Object (500)</td>
+                <td>55.0</td>
+                <td>56.8</td>
+                <td>+1.8 pp</td>
+                <td>30</td>
+                <td>21</td>
+                <td>202.46M / 80k</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
+                <td>Octo*</td>
+                <td>LIBERO-Goal (500)</td>
+                <td>88.2</td>
+                <td>90.8</td>
+                <td>+2.6 pp</td>
+                <td>40</td>
+                <td>27</td>
+                <td>202.46M / 707k</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
+                <td>Octo*</td>
+                <td>LIBERO-10 (500)</td>
+                <td>51.0</td>
+                <td>61.6</td>
                 <td>+10.6 pp</td>
-                <td>707k</td>
+                <td>98</td>
+                <td>45</td>
+                <td>202.46M / 707k</td>
               </tr>
               <tr>
-                <td>pi0.5</td>
-                <td>LIBERO average</td>
-                <td>77.9%</td>
-                <td>91.2%</td>
-                <td>+13.2 pp</td>
-                <td>4.0M</td>
+                <td>VLA</td>
+                <td>pi0.5*</td>
+                <td>LIBERO-Spatial (500)</td>
+                <td>84.4</td>
+                <td>96.0</td>
+                <td>+11.6 pp</td>
+                <td>74</td>
+                <td>16</td>
+                <td>3.3B / 4.0M</td>
               </tr>
               <tr>
+                <td>VLA</td>
+                <td>pi0.5*</td>
+                <td>LIBERO-Object (500)</td>
+                <td>88.4</td>
+                <td>99.8</td>
+                <td>+11.4 pp</td>
+                <td>58</td>
+                <td>1</td>
+                <td>3.3B / 4.0M</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
+                <td>pi0.5*</td>
+                <td>LIBERO-Goal (500)</td>
+                <td>70.4</td>
+                <td>84.2</td>
+                <td>+13.8 pp</td>
+                <td>83</td>
+                <td>14</td>
+                <td>3.3B / 4.0M</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
+                <td>pi0.5*</td>
+                <td>LIBERO-10 (500)</td>
+                <td>68.6</td>
+                <td>84.6</td>
+                <td>+16.0 pp</td>
+                <td>115</td>
+                <td>35</td>
+                <td>3.3B / 4.0M</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
                 <td>SmolVLA</td>
-                <td>LIBERO Goal</td>
-                <td>73.0%</td>
-                <td>77.4%</td>
+                <td>LIBERO-Spatial (500)</td>
+                <td>66.4</td>
+                <td>68.6</td>
+                <td>+2.2 pp</td>
+                <td>102</td>
+                <td>91</td>
+                <td>450.05M / 5.18M</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
+                <td>SmolVLA</td>
+                <td>LIBERO-Object (500)</td>
+                <td>80.8</td>
+                <td>81.8</td>
+                <td>+1.0 pp</td>
+                <td>55</td>
+                <td>50</td>
+                <td>450.05M / 5.18M</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
+                <td>SmolVLA</td>
+                <td>LIBERO-Goal (500)</td>
+                <td>73.0</td>
+                <td>77.4</td>
                 <td>+4.4 pp</td>
-                <td>5.18M</td>
+                <td>72</td>
+                <td>50</td>
+                <td>450.05M / 5.18M</td>
+              </tr>
+              <tr>
+                <td>VLA</td>
+                <td>SmolVLA</td>
+                <td>LIBERO-10 (500)</td>
+                <td>33.4</td>
+                <td>35.0</td>
+                <td>+1.6 pp</td>
+                <td>77</td>
+                <td>69</td>
+                <td>450.05M / 5.18M</td>
               </tr>
             </tbody>
           </table>
@@ -283,7 +468,7 @@
     <section class="section section--light" id="analysis">
       <div class="container">
         <div class="section-heading">
-          <h2>Diagnostics</h2>
+          <h2>Ablations and Diagnostics</h2>
           <p>
             Paired rescue and harm counts are central to understanding when a
             residual intervention repairs a base rollout and when it over-corrects.
@@ -291,20 +476,20 @@
         </div>
         <div class="figure-grid">
           <figure class="media-frame">
-            <img src="static/images/act_main_success_seed_scatter.png" alt="ACT main success scatter across seeds">
-            <figcaption>ACT seed-level success: insertion benefits most from residual refinement.</figcaption>
+            <img src="static/images/act_ablation_compact.png" alt="ACT horizon and residual-strength ablations">
+            <figcaption>ACT horizon and residual-strength ablations from the paper.</figcaption>
           </figure>
           <figure class="media-frame">
-            <img src="static/images/act_parameter_efficiency.png" alt="ACT parameter efficiency plot">
-            <figcaption>ACT refiner parameter count remains below 0.3% of the frozen base.</figcaption>
+            <img src="static/images/dp_ablation_compact.png" alt="Diffusion Policy context and refiner-checkpoint ablations">
+            <figcaption>DP context and refiner-checkpoint ablations.</figcaption>
           </figure>
           <figure class="media-frame">
-            <img src="static/images/residual_delta_l2_rollout_time.png" alt="Residual magnitude over rollout time">
-            <figcaption>Residual magnitude over rollout time.</figcaption>
+            <img src="static/images/pi05_alpha_curve.png" alt="pi0.5 residual-strength sweep over LIBERO rollouts">
+            <figcaption>pi0.5 residual-strength sweep over paired LIBERO rollouts.</figcaption>
           </figure>
           <figure class="media-frame">
-            <img src="static/images/residual_delta_l2_action_step.png" alt="Residual magnitude over action step">
-            <figcaption>Residual magnitude over action step inside a predicted chunk.</figcaption>
+            <img src="static/images/octo_structure_ablation_bar.png" alt="Octo structure ablation over LIBERO suites">
+            <figcaption>Octo structure ablation over 500 rollouts per suite.</figcaption>
           </figure>
         </div>
       </div>
@@ -313,31 +498,17 @@
     <section class="section" id="libero">
       <div class="container">
         <div class="section-heading">
-          <h2>LIBERO Suites</h2>
+          <h2>VLA Rescue Example</h2>
           <p>
-            ASRR is evaluated on Spatial, Object, Goal, and LIBERO-10 suites for
-            VLA-style policies. Suite-specific alpha sweeps reveal different
-            rescue-harm tradeoffs.
+            The project page uses the same paper assets for the VLA qualitative
+            example: a failed base rollout and the corresponding ASRR rescue
+            under the same LIBERO initial state.
           </p>
         </div>
-        <div class="figure-grid">
-          <figure class="media-frame">
-            <img src="static/images/libero_spatial.png" alt="LIBERO Spatial suite summary">
-            <figcaption>LIBERO Spatial.</figcaption>
-          </figure>
-          <figure class="media-frame">
-            <img src="static/images/libero_object.png" alt="LIBERO Object suite summary">
-            <figcaption>LIBERO Object.</figcaption>
-          </figure>
-          <figure class="media-frame">
-            <img src="static/images/libero_goal.png" alt="LIBERO Goal suite summary">
-            <figcaption>LIBERO Goal.</figcaption>
-          </figure>
-          <figure class="media-frame">
-            <img src="static/images/libero_10.png" alt="LIBERO-10 suite summary">
-            <figcaption>LIBERO-10.</figcaption>
-          </figure>
-        </div>
+        <figure class="media-frame media-frame--wide media-frame--paper">
+          <img src="static/images/goal_rescue_combined.svg" alt="Paper qualitative example comparing VLA input, base failure, and ASRR rescue">
+          <figcaption>Paper qualitative figure: the same input can lead to a base failure and an ASRR rescue after residual action-sequence refinement.</figcaption>
+        </figure>
       </div>
     </section>
 
@@ -367,20 +538,23 @@
         <div class="split__text">
           <h2>Code Release</h2>
           <p>
-            The current public code release contains a partial snapshot of the
-            policy-agnostic ASRR core. It is intentionally small and independent
-            of policy-specific wrappers. Future updates can refresh the core and
-            add cleaned training scripts, evaluation tools, and full experiment
-            artifacts.
+            The current public code release contains the policy-agnostic ASRR
+            package plus lightweight integration examples for ACT, Diffusion
+            Policy, Octo, OpenVLA-OFT, pi0.5, and SmolVLA. External policy
+            repositories, checkpoints, and datasets are not bundled.
           </p>
           <div class="button-row">
             <a class="button button--dark" href="https://github.com/anonymous-0525/ASRR/tree/main/asrr_core" target="_blank" rel="noopener">
               <i class="fa-brands fa-github" aria-hidden="true"></i>
               <span>asrr_core</span>
             </a>
+            <a class="button button--dark" href="https://github.com/anonymous-0525/ASRR/tree/main/examples" target="_blank" rel="noopener">
+              <i class="fa-solid fa-code" aria-hidden="true"></i>
+              <span>examples</span>
+            </a>
           </div>
         </div>
-        <pre class="code-block"><code>from asrr_core import ActionSequenceResidualAdapter
+        <pre class="code-block"><code>from asrr_core import ActionSequenceResidualAdapter, apply_residual
 
 adapter = ActionSequenceResidualAdapter(
     action_dim=7,
@@ -392,7 +566,7 @@ adapter = ActionSequenceResidualAdapter(
 )
 
 delta = adapter(base_action)
-refined = base_action + alpha * delta</code></pre>
+refined = apply_residual(base_action, delta, alpha=1.0)</code></pre>
       </div>
     </section>
 

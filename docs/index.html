@@ -13,12 +13,12 @@
   <meta property="og:site_name" content="ASRR">
   <meta property="og:title" content="ASRR: Action Sequence Residual Refinement">
   <meta property="og:description" content="A lightweight offline refiner for adapting frozen robot policies without updating the base model.">
-  <meta property="og:image" content="static/images/asrr_refiner_design.png">
+  <meta property="og:image" content="static/images/hero_rescue_actual_primary.png">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ASRR: Action Sequence Residual Refinement">
   <meta name="twitter:description" content="Frozen base policy, residual action-sequence refiner, policy-native execution.">
-  <meta name="twitter:image" content="static/images/asrr_refiner_design.png">
+  <meta name="twitter:image" content="static/images/hero_rescue_actual_primary.png">
 
   <title>ASRR | Project Page</title>
 
@@ -36,6 +36,7 @@
       <div class="nav__links">
         <a href="#method">Method</a>
         <a href="#results">Results</a>
+        <a href="#rescue-videos">Videos</a>
         <a href="#code">Code</a>
         <a href="#citation">Citation</a>
       </div>
@@ -336,6 +337,329 @@
             <img src="static/images/libero_10.png" alt="LIBERO-10 suite summary">
             <figcaption>LIBERO-10.</figcaption>
           </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--light" id="rescue-videos">
+      <div class="container">
+        <div class="section-heading">
+          <h2>VLA Rescue Videos</h2>
+          <p>
+            Each VLA policy family occupies two rows: the primary camera first,
+            followed by the wrist camera. Every suite uses two adjacent columns:
+            base failure on the left and ASRR refined rescue on the right.
+          </p>
+        </div>
+
+        <div class="rescue-board-wrap">
+          <div class="rescue-board" aria-label="Four VLA methods by four LIBERO suites with primary and wrist camera rows">
+          <div class="rescue-board__corner">Method / camera</div>
+          <div class="rescue-board__head">Spatial<span>Base</span></div>
+          <div class="rescue-board__head">Spatial<span>ASRR</span></div>
+          <div class="rescue-board__head">Object<span>Base</span></div>
+          <div class="rescue-board__head">Object<span>ASRR</span></div>
+          <div class="rescue-board__head">Goal<span>Base</span></div>
+          <div class="rescue-board__head">Goal<span>ASRR</span></div>
+          <div class="rescue-board__head">LIBERO-10<span>Base</span></div>
+          <div class="rescue-board__head">LIBERO-10<span>ASRR</span></div>
+
+          <div class="rescue-board__rowhead">OpenVLA-OFT<span>Primary camera</span></div>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Paired record found; primary-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Refined primary-camera rerun pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Paired record found; primary-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Refined primary-camera rerun pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Paired record found; primary-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Refined primary-camera rerun pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Paired record found; primary-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Refined primary-camera rerun pending.</p>
+          </article>
+
+          <div class="rescue-board__rowhead">OpenVLA-OFT<span>Wrist camera</span></div>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Dual-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Dual-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Dual-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Dual-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Dual-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Dual-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Dual-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Dual-camera export pending.</p>
+          </article>
+
+          <div class="rescue-board__rowhead">Octo<span>Primary camera</span></div>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Verified Octo Spatial video export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Verified Octo Spatial video export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Verified Octo Object video export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Verified Octo Object video export pending.</p>
+          </article>
+          <article class="video-card">
+            <video controls preload="metadata">
+              <source src="static/videos/vla_rescues/octo_goal_primary_base_rot180.mp4" type="video/mp4">
+            </video>
+            <strong>Base failure</strong>
+            <p>Goal: push the plate to the front of the stove.</p>
+          </article>
+          <article class="video-card">
+            <video controls preload="metadata">
+              <source src="static/videos/vla_rescues/octo_goal_primary_refined_rot180.mp4" type="video/mp4">
+            </video>
+            <strong>Refined rescue</strong>
+            <p>ASRR completes the plate movement.</p>
+          </article>
+          <article class="video-card">
+            <video controls preload="metadata">
+              <source src="static/videos/vla_rescues/octo_libero10_primary_base_rot180.mp4" type="video/mp4">
+            </video>
+            <strong>Base failure</strong>
+            <p>LIBERO-10: basket placement sequence.</p>
+          </article>
+          <article class="video-card">
+            <video controls preload="metadata">
+              <source src="static/videos/vla_rescues/octo_libero10_primary_refined_rot180.mp4" type="video/mp4">
+            </video>
+            <strong>Refined rescue</strong>
+            <p>ASRR recovers the same initial state.</p>
+          </article>
+
+          <div class="rescue-board__rowhead">Octo<span>Wrist camera</span></div>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Verified Octo Spatial wrist export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Verified Octo Spatial wrist export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Verified Octo Object wrist export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Verified Octo Object wrist export pending.</p>
+          </article>
+          <article class="video-card">
+            <video controls preload="metadata">
+              <source src="static/videos/vla_rescues/octo_goal_wrist_base_rot180.mp4" type="video/mp4">
+            </video>
+            <strong>Base failure</strong>
+            <p>Goal task wrist stream.</p>
+          </article>
+          <article class="video-card">
+            <video controls preload="metadata">
+              <source src="static/videos/vla_rescues/octo_goal_wrist_refined_rot180.mp4" type="video/mp4">
+            </video>
+            <strong>Refined rescue</strong>
+            <p>ASRR wrist stream.</p>
+          </article>
+          <article class="video-card">
+            <video controls preload="metadata">
+              <source src="static/videos/vla_rescues/octo_libero10_wrist_base_rot180.mp4" type="video/mp4">
+            </video>
+            <strong>Base failure</strong>
+            <p>LIBERO-10 wrist stream.</p>
+          </article>
+          <article class="video-card">
+            <video controls preload="metadata">
+              <source src="static/videos/vla_rescues/octo_libero10_wrist_refined_rot180.mp4" type="video/mp4">
+            </video>
+            <strong>Refined rescue</strong>
+            <p>Recovered wrist stream.</p>
+          </article>
+
+          <div class="rescue-board__rowhead">pi0.5<span>Primary camera</span></div>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>LIBERO wrapper export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>ASRR wrapper export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>LIBERO wrapper export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>ASRR wrapper export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>LIBERO wrapper export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>ASRR wrapper export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>LIBERO wrapper export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>ASRR wrapper export pending.</p>
+          </article>
+
+          <div class="rescue-board__rowhead">pi0.5<span>Wrist camera</span></div>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+
+          <div class="rescue-board__rowhead">SmolVLA<span>Primary camera</span></div>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Matching paired seed pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Simple-ASRR video export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Matching paired seed pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Simple-ASRR video export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Matching paired seed pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Simple-ASRR video export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Matching paired seed pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Simple-ASRR video export pending.</p>
+          </article>
+
+          <div class="rescue-board__rowhead">SmolVLA<span>Wrist camera</span></div>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Base failure</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          <article class="video-card video-card--pending">
+            <strong>Refined rescue</strong>
+            <p>Wrist-camera export pending.</p>
+          </article>
+          </div>
         </div>
       </div>
     </section>

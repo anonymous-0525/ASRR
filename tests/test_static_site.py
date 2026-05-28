@@ -18,7 +18,7 @@ class PageParser(HTMLParser):
         attrs = dict(attrs)
         if "id" in attrs:
             self.ids.add(attrs["id"])
-        for key in ("href", "src"):
+        for key in ("href", "src", "poster"):
             value = attrs.get(key)
             if value:
                 self.refs.append((tag, key, value))
@@ -79,7 +79,16 @@ class StaticSiteTests(unittest.TestCase):
             DOCS / "static/files/asrr_paper.pdf",
             DOCS / "static/images/asrr_simple_overview.png",
             DOCS / "static/images/asrr_refiner_design.png",
+            DOCS / "static/images/hero_rescue_actual_primary.png",
             DOCS / "static/images/asrr_parameter_efficiency_summary.png",
+            DOCS / "static/videos/vla_rescues/octo_goal_primary_base_rot180.mp4",
+            DOCS / "static/videos/vla_rescues/octo_goal_primary_refined_rot180.mp4",
+            DOCS / "static/videos/vla_rescues/octo_goal_wrist_base_rot180.mp4",
+            DOCS / "static/videos/vla_rescues/octo_goal_wrist_refined_rot180.mp4",
+            DOCS / "static/videos/vla_rescues/octo_libero10_primary_base_rot180.mp4",
+            DOCS / "static/videos/vla_rescues/octo_libero10_primary_refined_rot180.mp4",
+            DOCS / "static/videos/vla_rescues/octo_libero10_wrist_base_rot180.mp4",
+            DOCS / "static/videos/vla_rescues/octo_libero10_wrist_refined_rot180.mp4",
         ]
         for path in expected:
             with self.subTest(path=path):

@@ -58,7 +58,7 @@ class StaticSiteTests(unittest.TestCase):
             "Ning" + "xin Su",
         ]
         matcher = re.compile("|".join(patterns), flags=re.IGNORECASE)
-        checked_suffixes = {".html", ".css", ".md", ".py", ".toml"}
+        checked_suffixes = {".html", ".css", ".js", ".md", ".py", ".toml"}
         offenders = []
 
         for path in ROOT.rglob("*"):
@@ -76,6 +76,7 @@ class StaticSiteTests(unittest.TestCase):
         expected = [
             DOCS / "index.html",
             DOCS / "static/css/site.css",
+            DOCS / "static/js/rescue-videos.js",
             DOCS / "static/files/asrr_paper.pdf",
             DOCS / "static/images/asrr_simple_overview.png",
             DOCS / "static/images/asrr_refiner_design.png",
@@ -94,6 +95,19 @@ class StaticSiteTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertTrue(path.exists(), path)
                 self.assertGreater(path.stat().st_size, 0, path)
+
+    def test_rescue_video_references_exist(self):
+        script = DOCS / "static/js/rescue-videos.js"
+        text = script.read_text(encoding="utf-8")
+        refs = sorted(set(re.findall(r'"([^"]+\.mp4)"', text)))
+
+        self.assertGreaterEqual(len(refs), 64)
+        missing = [
+            ref
+            for ref in refs
+            if not (DOCS / "static/videos/vla_rescues" / ref).exists()
+        ]
+        self.assertEqual([], missing)
 
 
 if __name__ == "__main__":

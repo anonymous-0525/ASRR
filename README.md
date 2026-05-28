@@ -45,6 +45,17 @@ task_index:     [B]            optional
 delta_action:   [B, H, D]
 ```
 
+## Install
+
+The current snapshot can be installed as an editable local package:
+
+```bash
+pip install -e .
+```
+
+This installs the `asrr_core` package and expects PyTorch to be available in the
+target environment.
+
 ## Minimal Example
 
 ```python
@@ -73,6 +84,16 @@ metrics = supervised_asrr_loss(
     loss_type="mse",
 )
 metrics["loss"].backward()
+```
+
+## Validation
+
+The repository includes standard-library tests for the project page and an
+optional ASRR core smoke test. The core smoke test is skipped automatically when
+PyTorch is not installed:
+
+```bash
+python -m unittest discover -s tests
 ```
 
 ## Citation

@@ -99,7 +99,7 @@
     </section>
 
     <section class="section" id="overview">
-      <div class="container split">
+      <div class="container split split--overview">
         <div class="split__text">
           <h2>Overview</h2>
           <p>
@@ -118,7 +118,7 @@
             <li>Small trainable module: refiner sizes from kiloparameters to a few megabytes.</li>
           </ul>
         </div>
-        <figure class="media-frame media-frame--paper">
+        <figure class="media-frame media-frame--paper overview-figure">
           <img src="static/images/intro_graph.png" alt="ASRR introduction figure with language, image, robot state, base failure, expert, and refined success">
           <figcaption>Paper introduction figure: ASRR refines useful but imperfect action sequences into successful rollouts.</figcaption>
         </figure>
@@ -191,11 +191,6 @@
             <span>68.6% to 84.6% success</span>
           </article>
         </div>
-
-        <figure class="media-frame media-frame--wide">
-          <img src="static/images/asrr_parameter_efficiency_summary.png" alt="Parameter efficient ASRR improvements from frozen base to refined policy">
-          <figcaption>Parameter-efficient improvement: ASRR trains compact refiners while keeping base policies frozen.</figcaption>
-        </figure>
 
         <div class="table-wrap">
           <table class="main-results-table">
@@ -474,7 +469,7 @@
             residual intervention repairs a base rollout and when it over-corrects.
           </p>
         </div>
-        <div class="figure-grid">
+        <div class="figure-grid diagnostic-grid">
           <figure class="media-frame">
             <img src="static/images/act_ablation_compact.png" alt="ACT horizon and residual-strength ablations">
             <figcaption>ACT horizon and residual-strength ablations from the paper.</figcaption>
@@ -491,28 +486,27 @@
             <img src="static/images/octo_structure_ablation_bar.png" alt="Octo structure ablation over LIBERO suites">
             <figcaption>Octo structure ablation over 500 rollouts per suite.</figcaption>
           </figure>
+          <figure class="media-frame">
+            <img src="static/images/act_checkpoint_diagnostic.png" alt="ACT checkpoint diagnostic from the appendix">
+            <figcaption>Appendix diagnostic for ACT checkpoint behavior.</figcaption>
+          </figure>
+          <figure class="media-frame">
+            <img src="static/images/dp_variant_ablation.png" alt="Diffusion Policy ASRR variant ablation">
+            <figcaption>Appendix DP ASRR variant ablation.</figcaption>
+          </figure>
+          <figure class="media-frame">
+            <img src="static/images/dp_robustness_comparison.png" alt="Diffusion Policy robustness comparison">
+            <figcaption>Appendix DP robustness comparison.</figcaption>
+          </figure>
+          <figure class="media-frame">
+            <img src="static/images/vla_rescue_negative_diagnostic.png" alt="VLA rescue and negative diagnostic">
+            <figcaption>Appendix VLA rescue and negative diagnostic.</figcaption>
+          </figure>
         </div>
       </div>
     </section>
 
-    <section class="section" id="libero">
-      <div class="container">
-        <div class="section-heading">
-          <h2>VLA Rescue Example</h2>
-          <p>
-            The project page uses the same paper assets for the VLA qualitative
-            example: a failed base rollout and the corresponding ASRR rescue
-            under the same LIBERO initial state.
-          </p>
-        </div>
-        <figure class="media-frame media-frame--wide media-frame--paper">
-          <img src="static/images/goal_rescue_combined.svg" alt="Paper qualitative example comparing VLA input, base failure, and ASRR rescue">
-          <figcaption>Paper qualitative figure: the same input can lead to a base failure and an ASRR rescue after residual action-sequence refinement.</figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <section class="section section--light" id="rescue-videos">
+    <section class="section" id="rescue-videos">
       <div class="container">
         <div class="section-heading">
           <h2>VLA Rescue Videos</h2>

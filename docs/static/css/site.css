@@ -42,18 +42,28 @@ img {
   overflow: hidden;
   color: var(--white);
   background-color: #111827;
-  background-image:
-    linear-gradient(90deg, rgb(11 17 29 / 0.98), rgb(11 17 29 / 0.82), rgb(11 17 29 / 0.34)),
-    url("../images/hero_rescue_refined_primary.png");
-  background-position: center, right 9% center;
-  background-repeat: no-repeat;
-  background-size: cover, min(42vw, 500px) min(42vw, 500px);
+}
+
+.hero::before {
+  position: absolute;
+  top: 50%;
+  right: 9%;
+  z-index: 0;
+  width: min(42vw, 500px);
+  aspect-ratio: 1 / 1;
+  background: url("../images/hero_rescue_refined_primary.png") center / cover no-repeat;
+  content: "";
+  transform: translateY(-50%) rotate(180deg);
+  transform-origin: center;
 }
 
 .hero__shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.14));
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgb(11 17 29 / 0.98), rgb(11 17 29 / 0.82), rgb(11 17 29 / 0.34)),
+    linear-gradient(180deg, rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.14));
   pointer-events: none;
 }
 
@@ -212,6 +222,10 @@ p {
   align-items: center;
 }
 
+.split--overview {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.72fr);
+}
+
 .split--code {
   grid-template-columns: minmax(0, 0.85fr) minmax(360px, 1.15fr);
 }
@@ -280,6 +294,15 @@ p {
   max-height: 720px;
   object-fit: contain;
   background: var(--white);
+}
+
+.overview-figure {
+  max-width: 460px;
+  justify-self: end;
+}
+
+.overview-figure img {
+  max-height: 360px;
 }
 
 .media-frame figcaption {
@@ -411,6 +434,29 @@ tr:last-child td {
 
 .figure-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.diagnostic-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.diagnostic-grid .media-frame {
+  display: flex;
+  min-height: 270px;
+  flex-direction: column;
+}
+
+.diagnostic-grid .media-frame img {
+  height: 174px;
+  padding: 12px;
+  object-fit: contain;
+  background: var(--white);
+}
+
+.diagnostic-grid .media-frame figcaption {
+  flex: 1;
+  font-size: 0.84rem;
+  line-height: 1.38;
 }
 
 .rescue-board-wrap {
@@ -564,6 +610,15 @@ tr:last-child td {
     grid-template-columns: 1fr;
   }
 
+  .diagnostic-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overview-figure {
+    max-width: 520px;
+    justify-self: start;
+  }
+
   .hero {
     min-height: 68vh;
   }
@@ -599,5 +654,14 @@ tr:last-child td {
 
   .button {
     width: 100%;
+  }
+
+  .diagnostic-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero::before {
+    right: -8%;
+    width: min(68vw, 360px);
   }
 }

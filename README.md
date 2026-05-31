@@ -57,6 +57,11 @@ datasets, environments, and preprocessing utilities.  This repository provides
 the ASRR refiner and integration pattern; it does not bundle external robot
 policy repositories or pretrained weights.
 
+For method-by-method reproducibility status, see:
+
+- `METHOD_SUPPORT_MATRIX.md` for what a fresh clone can and cannot run;
+- `PATCHES.md` for method-side wrapper and hook requirements.
+
 ## Quick Tensor Smoke Test
 
 ```python
@@ -179,6 +184,11 @@ The method wrapper owns all method-specific logic:
 
 `asrr_core` owns only the residual module, bounds, gates, losses, and residual
 application.
+
+For full VLA experiments, the external method runner must provide the tensors
+expected by the relevant `examples/<method>/` wrapper.  The public ASRR package
+contains lightweight wrappers and compatibility modules, not the full
+OpenVLA-OFT, SmolVLA, Octo, or pi0.5 training/evaluation stacks.
 
 ## Method Examples
 

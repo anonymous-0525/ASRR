@@ -42,6 +42,9 @@ These examples are intentionally thin.  Real experiments still require the
 corresponding base method repository, model weights, environment, datasets, and
 normalization statistics.
 
+For a concise method-by-method status table, see `../METHOD_SUPPORT_MATRIX.md`.
+For method-side hook and patch guidance, see `../PATCHES.md`.
+
 ## What Clone Alone Can Do
 
 A fresh clone can run tensor-level smoke tests and show how to instantiate ASRR

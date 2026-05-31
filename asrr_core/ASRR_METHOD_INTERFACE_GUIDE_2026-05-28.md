@@ -39,6 +39,10 @@ examples/
 `asrr_core` does not import external robot-policy implementations.  External
 method runners import `asrr_core`.
 
+The public repository records this boundary in `METHOD_SUPPORT_MATRIX.md` and
+`PATCHES.md`.  Those files are the source of truth for clone-alone capability,
+production runner requirements, and method-side hook expectations.
+
 ## Entry Point Design
 
 ASRR does not provide a single command such as:

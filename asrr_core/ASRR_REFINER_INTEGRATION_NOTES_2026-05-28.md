@@ -159,6 +159,7 @@ The public package should include:
 - `asrr_core`;
 - lightweight method examples;
 - interface documentation;
+- method support and patch notes;
 - tensor-level tests.
 
 The public package should not include:

@@ -399,6 +399,10 @@ caption {
   font-size: 0.86rem;
 }
 
+.update-results-table {
+  min-width: 1120px;
+}
+
 th,
 td {
   padding: 12px 14px;
@@ -430,6 +434,41 @@ tr:last-child td {
 .main-results-table tbody td:nth-child(8) {
   color: var(--red);
   font-weight: 800;
+}
+
+.update-results-table .vla-row td {
+  background: #fff9f1;
+}
+
+.update-results-table .method-divider td {
+  border-bottom: 2px solid #eadccb;
+}
+
+.update-results-table td.gain-light,
+.update-results-table td.rescue-light {
+  background: #e8f5e9;
+}
+
+.update-results-table td.gain-mid,
+.update-results-table td.rescue-mid {
+  background: #d8eed8;
+}
+
+.update-results-table td.gain-strong,
+.update-results-table td.rescue-strong {
+  background: #b7deb8;
+}
+
+.update-results-table td.harm-light {
+  background: #fdecea;
+}
+
+.update-results-table td.harm-mid {
+  background: #f7d4d7;
+}
+
+.update-results-table td.harm-strong {
+  background: #f0b5b8;
 }
 
 .figure-grid {

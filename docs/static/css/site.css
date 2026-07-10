@@ -440,7 +440,7 @@ tr:last-child td {
   width: 100%;
   max-height: 900px;
   object-fit: contain;
-  padding: 14px;
+  padding: 8px;
   background: var(--white);
 }
 

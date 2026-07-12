@@ -459,9 +459,8 @@ tr:last-child td {
 .real-robot-video video {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #0b111d;
-  object-fit: contain;
+  height: auto;
+  background: var(--white);
 }
 
 .real-robot-video figcaption {

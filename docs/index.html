@@ -104,11 +104,69 @@
         <div class="section-heading">
           <h2>Update</h2>
           <p>
-            Three-round VLA evaluations on LIBERO compare the frozen Base policy
-            with Base+ASRR. Each round evaluates 500 paired rollouts per suite;
-            values are mean &plusmn; sample standard deviation across the three rounds.
+            New real-robot and pi0.5 multi-suite evaluations further compare the
+            frozen Base policy with Base+ASRR. Real-robot clips play automatically
+            below, followed by the latest summary tables and the three-round VLA
+            statistics.
           </p>
         </div>
+
+        <div class="update-block">
+          <h3>Real-Robot Rollouts</h3>
+          <div class="real-robot-grid">
+            <article class="real-robot-pair">
+              <h4>Right tilted placement</h4>
+              <div class="real-robot-videos">
+                <figure class="real-robot-video">
+                  <video src="static/videos/real_robot_pi05/right_tilt_base.mp4" autoplay muted loop playsinline preload="metadata"></video>
+                  <figcaption>pi0.5 5k Base</figcaption>
+                </figure>
+                <figure class="real-robot-video">
+                  <video src="static/videos/real_robot_pi05/right_tilt_asrr.mp4" autoplay muted loop playsinline preload="metadata"></video>
+                  <figcaption>pi0.5 5k + ASRR</figcaption>
+                </figure>
+              </div>
+            </article>
+
+            <article class="real-robot-pair">
+              <h4>Left upright placement</h4>
+              <div class="real-robot-videos">
+                <figure class="real-robot-video">
+                  <video src="static/videos/real_robot_pi05/left_upright_timeout_base.mp4" autoplay muted loop playsinline preload="metadata"></video>
+                  <figcaption>pi0.5 5k Base</figcaption>
+                </figure>
+                <figure class="real-robot-video">
+                  <video src="static/videos/real_robot_pi05/left_upright_timeout_asrr.mp4" autoplay muted loop playsinline preload="metadata"></video>
+                  <figcaption>pi0.5 5k + ASRR</figcaption>
+                </figure>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <figure class="media-frame media-frame--wide update-table-figure">
+          <a href="static/files/pi05_real_robot_table.pdf" target="_blank" rel="noopener" aria-label="Open the pi0.5 real-robot result table PDF">
+            <img src="static/images/pi05_real_robot_table_main.png" alt="Real-robot corn-to-plate results comparing pi0.5 5k Base and pi0.5 5k plus ASRR">
+          </a>
+          <figcaption>
+            Real-robot corn-to-plate results with a Piper arm and two D455 cameras.
+            Both methods use the same undertrained pi0.5 5k base policy; ASRR uses
+            a 1000-epoch output-space refiner with &alpha; = 1.5.
+            <a href="static/files/pi05_real_robot_table.pdf" target="_blank" rel="noopener">Open PDF table</a>.
+          </figcaption>
+        </figure>
+
+        <figure class="media-frame media-frame--wide update-table-figure">
+          <a href="static/files/pi05_multisuite_table.pdf" target="_blank" rel="noopener" aria-label="Open the pi0.5 multi-suite result table PDF">
+            <img src="static/images/pi05_multisuite_table_main.png" alt="Three-seed multi-suite pi0.5 ASRR evaluation on LIBERO">
+          </a>
+          <figcaption>
+            Three-seed multi-suite pi0.5 ASRR evaluation on LIBERO. A single shared
+            ASRR refiner is trained from a balanced cache over all four suites and
+            evaluated with one global residual scale, &alpha; = 4.0.
+            <a href="static/files/pi05_multisuite_table.pdf" target="_blank" rel="noopener">Open PDF table</a>.
+          </figcaption>
+        </figure>
 
         <figure class="media-frame media-frame--wide update-table-figure">
           <a href="static/files/vla_three_round_update_table.pdf" target="_blank" rel="noopener" aria-label="Open the VLA three-round update table PDF">

@@ -432,6 +432,64 @@ tr:last-child td {
   font-weight: 800;
 }
 
+.update-block {
+  margin-bottom: 28px;
+}
+
+.update-block h3 {
+  margin-bottom: 16px;
+  font-size: 1.25rem;
+}
+
+.real-robot-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.real-robot-pair {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.real-robot-pair h4 {
+  margin: 0;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: #f8fafc;
+  font-size: 0.96rem;
+}
+
+.real-robot-videos {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: var(--line);
+}
+
+.real-robot-video {
+  margin: 0;
+  background: var(--white);
+}
+
+.real-robot-video video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #0b111d;
+  object-fit: cover;
+}
+
+.real-robot-video figcaption {
+  padding: 8px 10px 10px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .update-table-figure {
   background: #f8fafc;
 }
@@ -627,6 +685,7 @@ tr:last-child td {
   .split,
   .split--code,
   .feature-grid,
+  .real-robot-grid,
   .metric-grid,
   .figure-grid {
     grid-template-columns: 1fr;
@@ -679,6 +738,10 @@ tr:last-child td {
   }
 
   .diagnostic-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .real-robot-videos {
     grid-template-columns: 1fr;
   }
 

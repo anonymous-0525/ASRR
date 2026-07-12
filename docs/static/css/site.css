@@ -443,11 +443,12 @@ tr:last-child td {
 
 .real-robot-grid {
   display: grid;
-  gap: 18px;
+  gap: 20px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.real-robot-pair {
+.real-robot-video {
+  margin: 0;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -455,39 +456,33 @@ tr:last-child td {
   box-shadow: var(--shadow);
 }
 
-.real-robot-pair h4 {
-  margin: 0;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--line);
-  background: #f8fafc;
-  font-size: 0.96rem;
-}
-
-.real-robot-videos {
-  display: grid;
-  gap: 1px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  background: var(--line);
-}
-
-.real-robot-video {
-  margin: 0;
-  background: var(--white);
-}
-
 .real-robot-video video {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 9;
   background: #0b111d;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .real-robot-video figcaption {
-  padding: 8px 10px 10px;
+  display: grid;
+  gap: 2px;
+  min-height: 58px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 700;
+}
+
+.real-robot-video figcaption strong {
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.real-robot-video figcaption span {
+  line-height: 1.3;
 }
 
 .update-table-figure {
@@ -500,16 +495,6 @@ tr:last-child td {
   object-fit: contain;
   padding: 8px;
   background: var(--white);
-}
-
-.update-table-figure figcaption a {
-  color: var(--blue);
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.update-table-figure figcaption a:hover {
-  text-decoration: underline;
 }
 
 .figure-grid {
@@ -738,10 +723,6 @@ tr:last-child td {
   }
 
   .diagnostic-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .real-robot-videos {
     grid-template-columns: 1fr;
   }
 

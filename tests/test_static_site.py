@@ -76,45 +76,38 @@ class StaticSiteTests(unittest.TestCase):
         expected = [
             DOCS / "index.html",
             DOCS / "static/css/site.css",
-            DOCS / "static/js/rescue-videos.js",
+            DOCS / "static/js/site.js",
             DOCS / "static/files/asrr_paper.pdf",
-            DOCS / "static/images/intro_graph.png",
-            DOCS / "static/images/structure_graph.png",
             DOCS / "static/images/hero_rescue_refined_primary.png",
-            DOCS / "static/images/act_ablation_compact.png",
-            DOCS / "static/images/dp_ablation_compact.png",
-            DOCS / "static/images/pi05_alpha_curve.png",
-            DOCS / "static/images/octo_structure_ablation_bar.png",
-            DOCS / "static/images/act_checkpoint_diagnostic.png",
-            DOCS / "static/images/dp_variant_ablation.png",
-            DOCS / "static/images/dp_robustness_comparison.png",
-            DOCS / "static/images/vla_rescue_negative_diagnostic.png",
-            DOCS / "static/videos/vla_rescues/octo_goal_primary_base_rot180.mp4",
-            DOCS / "static/videos/vla_rescues/octo_goal_primary_refined_rot180.mp4",
-            DOCS / "static/videos/vla_rescues/octo_goal_wrist_base_rot180.mp4",
-            DOCS / "static/videos/vla_rescues/octo_goal_wrist_refined_rot180.mp4",
-            DOCS / "static/videos/vla_rescues/octo_libero10_primary_base_rot180.mp4",
-            DOCS / "static/videos/vla_rescues/octo_libero10_primary_refined_rot180.mp4",
-            DOCS / "static/videos/vla_rescues/octo_libero10_wrist_base_rot180.mp4",
-            DOCS / "static/videos/vla_rescues/octo_libero10_wrist_refined_rot180.mp4",
+            DOCS / "static/images/figure1_overview.png",
+            DOCS / "static/images/figure2_method.png",
+            DOCS / "static/images/figure3_act_horizon.png",
+            DOCS / "static/images/figure4_checkpoint_context.png",
+            DOCS / "static/videos/vla_rescues/pi05_libero10_base.mp4",
+            DOCS / "static/videos/vla_rescues/pi05_libero10_asrr.mp4",
+            DOCS / "static/videos/vla_rescues/openvla_oft_goal_primary_base.mp4",
+            DOCS / "static/videos/vla_rescues/openvla_oft_goal_primary_refined.mp4",
+            DOCS / "static/videos/real_robot_tasks/corn_to_plate_base.mp4",
+            DOCS / "static/videos/real_robot_tasks/corn_to_plate_asrr.mp4",
+            DOCS / "static/videos/real_robot_tasks/block_to_holder_base.mp4",
+            DOCS / "static/videos/real_robot_tasks/block_to_holder_asrr.mp4",
+            DOCS / "static/videos/real_robot_tasks/block_stacking_base.mp4",
+            DOCS / "static/videos/real_robot_tasks/block_stacking_asrr.mp4",
         ]
         for path in expected:
             with self.subTest(path=path):
                 self.assertTrue(path.exists(), path)
                 self.assertGreater(path.stat().st_size, 0, path)
 
-    def test_rescue_video_references_exist(self):
-        script = DOCS / "static/js/rescue-videos.js"
-        text = script.read_text(encoding="utf-8")
-        refs = sorted(set(re.findall(r'"([^"]+\.mp4)"', text)))
+    def test_video_scope_matches_final_paper(self):
+        html = (DOCS / "index.html").read_text(encoding="utf-8")
+        video_refs = sorted(set(re.findall(r'src="([^"]+\.mp4)"', html)))
 
-        self.assertGreaterEqual(len(refs), 64)
-        missing = [
-            ref
-            for ref in refs
-            if not (DOCS / "static/videos/vla_rescues" / ref).exists()
-        ]
-        self.assertEqual([], missing)
+        self.assertEqual(10, len(video_refs))
+        self.assertNotIn("Octo", html)
+        self.assertNotIn("SmolVLA", html)
+        self.assertEqual(6, html.count('data-playback-rate="2"'))
+        self.assertEqual(6, html.count('<span class="speed-badge">2×</span>'))
 
 
 if __name__ == "__main__":

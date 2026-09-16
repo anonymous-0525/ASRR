@@ -3,65 +3,61 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="title" content="ASRR: Action Sequence Residual Refinement">
-  <meta name="description" content="ASRR refines frozen robot policies by learning a lightweight residual over predicted action sequences.">
-  <meta name="keywords" content="robotics, vision-language-action, action sequence refinement, residual learning, imitation learning, policy adaptation">
-  <meta name="author" content="Anonymous EMNLP Submission">
+  <meta name="title" content="ASRR: Offline Action Sequence Residual Refinement for Robot Policy Adaptation">
+  <meta name="description" content="ASRR improves frozen robot policies by refining their predicted action sequences with a lightweight offline residual model.">
+  <meta name="keywords" content="robotics, action sequence refinement, residual learning, policy adaptation, vision-language-action">
+  <meta name="author" content="Anonymous ICRA 2027 Submission">
   <meta name="robots" content="index, follow">
 
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="ASRR">
-  <meta property="og:title" content="ASRR: Action Sequence Residual Refinement">
-  <meta property="og:description" content="A lightweight offline refiner for adapting frozen robot policies without updating the base model.">
+  <meta property="og:title" content="ASRR: Offline Action Sequence Residual Refinement for Robot Policy Adaptation">
+  <meta property="og:description" content="Editable action proposals, lightweight offline refinement, and validation from action-sequence policies to VLAs and real robots.">
   <meta property="og:image" content="static/images/hero_rescue_refined_primary.png">
-
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ASRR: Action Sequence Residual Refinement">
-  <meta name="twitter:description" content="Frozen base policy, residual action-sequence refiner, policy-native execution.">
+  <meta name="twitter:title" content="ASRR: Offline Action Sequence Residual Refinement">
+  <meta name="twitter:description" content="A lightweight offline method for refining action proposals from frozen robot policies.">
   <meta name="twitter:image" content="static/images/hero_rescue_refined_primary.png">
 
   <title>ASRR | Project Page</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="static/css/site.css">
 </head>
 <body>
   <header class="hero">
-    <div class="hero__shade"></div>
+    <div class="hero__overlay"></div>
     <nav class="nav" aria-label="Primary navigation">
       <a class="nav__brand" href="#">ASRR</a>
       <div class="nav__links">
-        <a href="#update">Update</a>
+        <a href="#overview">Overview</a>
         <a href="#method">Method</a>
         <a href="#results">Results</a>
-        <a href="#rescue-videos">Videos</a>
+        <a href="#analysis">Analysis</a>
+        <a href="#videos">Videos</a>
         <a href="#code">Code</a>
-        <a href="#citation">Citation</a>
       </div>
     </nav>
 
     <div class="hero__content">
-      <p class="kicker">Anonymous EMNLP Submission</p>
-      <h1>ASRR: Action Sequence Residual Refinement for Frozen Vision-Language-Action Policy Adaptation</h1>
+      <p class="kicker">Anonymous ICRA 2027 Submission</p>
+      <h1>ASRR: Offline Action Sequence Residual Refinement for Robot Policy Adaptation</h1>
       <p class="hero__summary">
-        ASRR freezes a base robot policy and learns a compact Action Sequence Refiner
-        that edits the policy's predicted action chunk before execution.
+        Treat the action proposal as an editable adaptation interface. ASRR keeps
+        the robot policy frozen and learns a compact residual refiner from cached
+        outputs and existing demonstrations.
       </p>
       <div class="button-row" aria-label="Project links">
-        <a class="button button--dark" href="static/files/asrr_paper.pdf" target="_blank" rel="noopener">
-          <i class="fa-solid fa-file-pdf" aria-hidden="true"></i>
-          <span>Paper</span>
+        <a class="button button--primary" href="static/files/asrr_paper.pdf" target="_blank" rel="noopener">
+          <i class="fa-solid fa-file-pdf" aria-hidden="true"></i><span>Paper</span>
         </a>
-        <a class="button button--dark" href="https://github.com/anonymous-0525/ASRR" target="_blank" rel="noopener">
-          <i class="fa-brands fa-github" aria-hidden="true"></i>
-          <span>Code</span>
+        <a class="button button--primary" href="https://github.com/anonymous-0525/ASRR" target="_blank" rel="noopener">
+          <i class="fa-brands fa-github" aria-hidden="true"></i><span>Code</span>
         </a>
-        <a class="button button--light" href="#results">
-          <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
-          <span>Results</span>
+        <a class="button button--ghost" href="#videos">
+          <i class="fa-solid fa-play" aria-hidden="true"></i><span>Videos</span>
         </a>
       </div>
     </div>
@@ -70,135 +66,40 @@
   <main>
     <section class="section section--light" id="abstract">
       <div class="container content-narrow">
-        <h2>Abstract</h2>
+        <p class="eyebrow">Abstract</p>
+        <h2>Improve the proposal, keep the policy fixed</h2>
         <p>
-          Multimodal signals such as language instructions, visual observations,
-          robot states, and actions are central to modern robotic manipulation.
-          Vision-language-action (VLA) models and action-sequence policies use
-          these signals to generate temporally structured action sequences for
-          robot control, but the resulting sequences are often useful yet
-          imperfect: they may capture the coarse task intent while still reducing
-          rollout success through local action errors or insufficient training.
+          Robots deployed with limited local computation and intermittent remote
+          support need efficient ways to improve an existing policy. Such a policy
+          may already capture task intent and propose reasonable actions, yet local
+          inaccuracies can still cause failures. Further fine-tuning or reinforcement
+          learning can require costly optimization or additional interaction.
         </p>
         <p>
-          We propose <strong>Action Sequence Residual Refinement</strong> (ASRR),
-          an offline adaptation method that freezes a base policy and learns a
-          lightweight <strong>Action Sequence Refiner</strong> to edit the
-          predicted action sequence in the policy-native action space. Instead of
-          updating the base model, ASRR acts as a plug-in residual correction layer
-          that adds a bounded and optionally masked refinement to the base action
-          proposal.
+          Action Sequence Residual Refinement (ASRR) tests whether a useful action
+          proposal can itself serve as the target of adaptation. It trains a
+          lightweight refiner offline from cached policy outputs and demonstrations,
+          optionally using policy-side context. Across action-sequence policies,
+          modern VLAs, and three real-robot tasks, the results establish predicted
+          action sequences as editable adaptation interfaces.
         </p>
-        <p>
-          Across action-sequence policies and VLA methods, ASRR improves multiple
-          frozen bases while training only small refiners. For example, ASRR
-          increases ACT insertion success by <strong>+21.7 percentage points</strong>
-          under temporal evaluation, and improves pi0.5 average LIBERO suite
-          success by <strong>+13.2 percentage points</strong>.
-        </p>
-      </div>
-    </section>
-
-    <section class="section" id="update">
-      <div class="container">
-        <div class="section-heading">
-          <h2>Update</h2>
-          <p>
-            New real-robot and pi0.5 multi-suite evaluations further compare the
-            frozen Base policy with Base+ASRR. Real-robot clips play automatically
-            below, followed by the latest summary tables and the three-round VLA
-            statistics.
-          </p>
-        </div>
-
-        <div class="update-block">
-          <h3>Real-Robot Rollouts</h3>
-          <div class="real-robot-grid">
-            <figure class="real-robot-video">
-              <video src="static/videos/real_robot_pi05/right_tilt_base.mp4" autoplay muted loop playsinline preload="metadata"></video>
-              <figcaption>
-                <strong>Right tilted placement</strong>
-                <span>pi0.5 5k Base</span>
-              </figcaption>
-            </figure>
-            <figure class="real-robot-video">
-              <video src="static/videos/real_robot_pi05/right_tilt_asrr.mp4" autoplay muted loop playsinline preload="metadata"></video>
-              <figcaption>
-                <strong>Right tilted placement</strong>
-                <span>pi0.5 5k + ASRR</span>
-              </figcaption>
-            </figure>
-            <figure class="real-robot-video">
-              <video src="static/videos/real_robot_pi05/left_upright_timeout_base.mp4" autoplay muted loop playsinline preload="metadata"></video>
-              <figcaption>
-                <strong>Left upright placement</strong>
-                <span>pi0.5 5k Base</span>
-              </figcaption>
-            </figure>
-            <figure class="real-robot-video">
-              <video src="static/videos/real_robot_pi05/left_upright_timeout_asrr.mp4" autoplay muted loop playsinline preload="metadata"></video>
-              <figcaption>
-                <strong>Left upright placement</strong>
-                <span>pi0.5 5k + ASRR</span>
-              </figcaption>
-            </figure>
-          </div>
-        </div>
-
-        <figure class="media-frame media-frame--wide update-table-figure">
-          <img src="static/images/pi05_real_robot_table_main.png" alt="Real-robot corn-to-plate results comparing pi0.5 5k Base and pi0.5 5k plus ASRR">
-          <figcaption>
-            Real-robot corn-to-plate results with a Piper arm and two D455 cameras.
-            Both methods use the same undertrained pi0.5 5k base policy; ASRR uses
-            a 1000-epoch output-space refiner with &alpha; = 1.5.
-          </figcaption>
-        </figure>
-
-        <figure class="media-frame media-frame--wide update-table-figure">
-          <img src="static/images/pi05_multisuite_table_main.png" alt="Three-seed multi-suite pi0.5 ASRR evaluation on LIBERO">
-          <figcaption>
-            Three-seed multi-suite pi0.5 ASRR evaluation on LIBERO. A single shared
-            ASRR refiner is trained from a balanced cache over all four suites and
-            evaluated with one global residual scale, &alpha; = 4.0.
-          </figcaption>
-        </figure>
-
-        <figure class="media-frame media-frame--wide update-table-figure">
-          <img src="static/images/vla_three_round_update_table.png" alt="Three-round VLA ASRR evaluations on LIBERO comparing Base and Base plus ASRR across OpenVLA-OFT, Octo, pi0.5, and SmolVLA">
-          <figcaption>
-            Three-round VLA ASRR evaluations on LIBERO. Base and Base+ASRR are
-            reported as mean &plusmn; sample standard deviation over three rounds,
-            with 500 paired rollouts per suite in each round. OpenVLA-OFT and
-            SmolVLA use fully fine-tuned LIBERO policies; Octo and pi0.5 use
-            undertrained LoRA-finetuned policies.
-          </figcaption>
-        </figure>
       </div>
     </section>
 
     <section class="section" id="overview">
-      <div class="container split split--overview">
-        <div class="split__text">
-          <h2>Overview</h2>
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">Motivation</p>
+          <h2>An output-space adaptation target</h2>
           <p>
-            ASRR treats action chunks as editable intermediate representations.
-            A frozen base policy proposes a sequence, the refiner predicts a
-            residual, and the original execution protocol consumes the refined
-            prefix or horizon.
+            A competent policy may already propose broadly correct behavior while
+            local pose, motion, or timing errors still limit execution. ASRR edits
+            that proposal directly before the controller executes it.
           </p>
-          <div class="equation">
-            A<sub>refined</sub> = A<sub>base</sub> + &alpha; M &odot; R<sub>&theta;</sub>(A<sub>base</sub>, z)
-          </div>
-          <ul class="check-list">
-            <li>Frozen base policy: no full-policy fine-tuning.</li>
-            <li>Policy-native residual: refine before output transforms.</li>
-            <li>Conservative control: residual scale, masks, and bounded heads.</li>
-            <li>Small trainable module: refiner sizes from kiloparameters to a few megabytes.</li>
-          </ul>
         </div>
-        <figure class="media-frame media-frame--paper overview-figure">
-          <img src="static/images/intro_graph.png" alt="ASRR introduction figure with language, image, robot state, base failure, expert, and refined success">
-          <figcaption>Paper introduction figure: ASRR refines useful but imperfect action sequences into successful rollouts.</figcaption>
+        <figure class="paper-figure paper-figure--overview">
+          <img src="static/images/figure1_overview.png" alt="ASRR motivation: a trained policy produces a useful but locally inaccurate action sequence that can be edited before execution">
+          <figcaption>Predicted action sequences provide a compact interface for post-training correction.</figcaption>
         </figure>
       </div>
     </section>
@@ -206,33 +107,23 @@
     <section class="section section--light" id="method">
       <div class="container">
         <div class="section-heading">
-          <h2>Method</h2>
+          <p class="eyebrow">Method</p>
+          <h2>Frozen proposal, optional context, residual edit</h2>
           <p>
-            The same residual operator can be instantiated with different context
-            sources for ACT, Diffusion Policy, OpenVLA-OFT, Octo, pi0.5, and SmolVLA.
+            ASRR predicts a conservative residual in the policy-native action space.
+            The corrected proposal follows the original execution rule, while
+            training reuses cached outputs and existing demonstrations.
           </p>
         </div>
-        <figure class="media-frame media-frame--wide">
-          <img src="static/images/structure_graph.png" alt="ASRR structure figure covering frozen bases, residual refiner, action comparison, rollout composition, and policy instantiations">
-          <figcaption>Paper method figure: ASRR keeps the base frozen and learns a compact residual action-sequence refiner.</figcaption>
+        <figure class="paper-figure paper-figure--method">
+          <img src="static/images/figure2_method.png" alt="ASRR method overview, offline refiner training, and qualitative refinement examples">
+          <figcaption>ASRR-A uses the proposal alone; ASRR-C adds context exposed by the frozen policy.</figcaption>
         </figure>
         <div class="feature-grid">
-          <article class="feature-card">
-            <h3>Sequence Tokens</h3>
-            <p>Each proposed action timestep is embedded and processed as part of an editable action sequence.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Context Fusion</h3>
-            <p>Optional qpos, low-dimensional observation, mode, task, or action-generation states condition the residual.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Masked Residuals</h3>
-            <p>VLA settings can freeze gripper or padding dimensions and bound residual size in the native action space.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Identity Start</h3>
-            <p>Zero-initialized residual heads make the composed policy identical to the frozen base at initialization.</p>
-          </article>
+          <article class="feature-card"><i class="fa-solid fa-lock" aria-hidden="true"></i><h3>Frozen base</h3><p>The selected policy checkpoint is unchanged during refiner training.</p></article>
+          <article class="feature-card"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><h3>Sequence editing</h3><p>The full temporally structured proposal is the object being corrected.</p></article>
+          <article class="feature-card"><i class="fa-solid fa-database" aria-hidden="true"></i><h3>Offline fitting</h3><p>Cached proposals decouple refiner optimization from large-policy inference.</p></article>
+          <article class="feature-card"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><h3>Native execution</h3><p>The refined sequence retains the controller's action horizon and replanning rule.</p></article>
         </div>
       </div>
     </section>
@@ -240,298 +131,38 @@
     <section class="section" id="results">
       <div class="container">
         <div class="section-heading">
-          <h2>Main Results</h2>
-          <p>
-            ASRR improves imitation-style action-sequence policies and several VLA
-            settings while leaving the base policy frozen.
-          </p>
+          <p class="eyebrow">Results</p>
+          <h2>From action chunks to VLAs and real robots</h2>
+          <p>All reported refiners keep their corresponding base policy frozen.</p>
         </div>
-
-        <div class="metric-grid" aria-label="ASRR headline metrics">
-          <article class="metric-card">
-            <span class="metric-card__label">ACT insertion</span>
-            <strong>+21.7 pp</strong>
-            <span>34.0% to 55.7% temporal success</span>
-          </article>
-          <article class="metric-card">
-            <span class="metric-card__label">ACT transfer cube</span>
-            <strong>+6.0 pp</strong>
-            <span>89.3% to 95.3% temporal success</span>
-          </article>
-          <article class="metric-card">
-            <span class="metric-card__label">DP square mean</span>
-            <strong>+10.4 pp</strong>
-            <span>81.6% to 92.0% success</span>
-          </article>
-          <article class="metric-card">
-            <span class="metric-card__label">pi0.5 LIBERO-10</span>
-            <strong>+16.0 pp</strong>
-            <span>68.6% to 84.6% success</span>
-          </article>
+        <div class="metric-grid" aria-label="ASRR headline results">
+          <article class="metric-card"><span class="metric-card__label">&pi;<sub>0.5</sub> · four-suite mean</span><strong>+14.4 pp</strong><span>Context-conditioned, suite-specific refinement</span></article>
+          <article class="metric-card"><span class="metric-card__label">5k checkpoint</span><strong>62.0 → 80.9</strong><span>Mean LIBERO success (%)</span></article>
+          <article class="metric-card"><span class="metric-card__label">Recorded compute</span><strong>25–63% less</strong><span>GPU-hours than adjacent continued LoRA runs</span></article>
+          <article class="metric-card"><span class="metric-card__label">Real robot · aggregate</span><strong>+6.7 pp</strong><span>154/240 to 170/240 successes</span></article>
         </div>
 
         <div class="table-wrap">
-          <table class="main-results-table">
-            <caption>
-              Table 2. Main ASRR results. Base and ASRR columns are percentages,
-              except PushT where they report normalized coverage.
-            </caption>
-            <thead>
-              <tr>
-                <th>Family</th>
-                <th>Method</th>
-                <th>Task / suite</th>
-                <th>Base</th>
-                <th>ASRR</th>
-                <th>&Delta;</th>
-                <th>Rescue</th>
-                <th>Harm</th>
-                <th>Params: base / refiner</th>
-              </tr>
-            </thead>
+          <table class="results-table">
+            <caption>Main simulation results. &Delta; is percentage-point gain; parameters are base/refiner millions.</caption>
+            <thead><tr><th>Family</th><th>Method</th><th>Task / suite (N)</th><th>Base</th><th>ASRR</th><th>&Delta;</th><th>Rescue</th><th>Harm</th><th>Params (M)</th></tr></thead>
             <tbody>
-              <tr>
-                <td>Policy</td>
-                <td>ACT</td>
-                <td>Insertion (300)</td>
-                <td>34.0</td>
-                <td>55.7</td>
-                <td>+21.7 pp</td>
-                <td>90</td>
-                <td>25</td>
-                <td>83.92M / 159.5k</td>
-              </tr>
-              <tr>
-                <td>Policy</td>
-                <td>ACT</td>
-                <td>Transfer cube (300)</td>
-                <td>89.3</td>
-                <td>95.3</td>
-                <td>+6.0 pp</td>
-                <td>30</td>
-                <td>12</td>
-                <td>83.92M / 159.5k</td>
-              </tr>
-              <tr>
-                <td>Policy</td>
-                <td>DP</td>
-                <td>Square (250)</td>
-                <td>81.6</td>
-                <td>92.0</td>
-                <td>+10.4 pp</td>
-                <td>38</td>
-                <td>12</td>
-                <td>65.88M / 681.7k</td>
-              </tr>
-              <tr>
-                <td>Policy</td>
-                <td>DP</td>
-                <td>Transport (250)</td>
-                <td>76.0</td>
-                <td>84.0</td>
-                <td>+8.0 pp</td>
-                <td>39</td>
-                <td>19</td>
-                <td>66.92M / 709.1k</td>
-              </tr>
-              <tr>
-                <td>Policy</td>
-                <td>DP</td>
-                <td>PushT (300)</td>
-                <td>79.1</td>
-                <td>82.0</td>
-                <td>+3.0</td>
-                <td>129</td>
-                <td>101</td>
-                <td>65.78M / 673.8k</td>
-              </tr>
-              <tr>
-                <td>Policy</td>
-                <td>DP</td>
-                <td>Tool-Hang (200)</td>
-                <td>66.0</td>
-                <td>79.5</td>
-                <td>+13.5 pp</td>
-                <td>48</td>
-                <td>21</td>
-                <td>66.74M / 697.1k</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>OpenVLA-OFT</td>
-                <td>LIBERO-Spatial (500)</td>
-                <td>92.8</td>
-                <td>93.0</td>
-                <td>+0.2 pp</td>
-                <td>10</td>
-                <td>9</td>
-                <td>7.54B / 7.66M</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>OpenVLA-OFT</td>
-                <td>LIBERO-Object (500)</td>
-                <td>98.8</td>
-                <td>99.4</td>
-                <td>+0.6 pp</td>
-                <td>5</td>
-                <td>2</td>
-                <td>7.54B / 7.66M</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>OpenVLA-OFT</td>
-                <td>LIBERO-Goal (500)</td>
-                <td>96.4</td>
-                <td>97.4</td>
-                <td>+1.0 pp</td>
-                <td>10</td>
-                <td>5</td>
-                <td>7.54B / 7.66M</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>OpenVLA-OFT</td>
-                <td>LIBERO-10 (500)</td>
-                <td>95.2</td>
-                <td>96.0</td>
-                <td>+0.8 pp</td>
-                <td>11</td>
-                <td>7</td>
-                <td>7.54B / 7.66M</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>Octo*</td>
-                <td>LIBERO-Spatial (500)</td>
-                <td>84.6</td>
-                <td>87.0</td>
-                <td>+2.4 pp</td>
-                <td>32</td>
-                <td>20</td>
-                <td>202.46M / 707k</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>Octo*</td>
-                <td>LIBERO-Object (500)</td>
-                <td>55.0</td>
-                <td>56.8</td>
-                <td>+1.8 pp</td>
-                <td>30</td>
-                <td>21</td>
-                <td>202.46M / 80k</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>Octo*</td>
-                <td>LIBERO-Goal (500)</td>
-                <td>88.2</td>
-                <td>90.8</td>
-                <td>+2.6 pp</td>
-                <td>40</td>
-                <td>27</td>
-                <td>202.46M / 707k</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>Octo*</td>
-                <td>LIBERO-10 (500)</td>
-                <td>51.0</td>
-                <td>61.6</td>
-                <td>+10.6 pp</td>
-                <td>98</td>
-                <td>45</td>
-                <td>202.46M / 707k</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>pi0.5*</td>
-                <td>LIBERO-Spatial (500)</td>
-                <td>84.4</td>
-                <td>96.0</td>
-                <td>+11.6 pp</td>
-                <td>74</td>
-                <td>16</td>
-                <td>3.3B / 4.0M</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>pi0.5*</td>
-                <td>LIBERO-Object (500)</td>
-                <td>88.4</td>
-                <td>99.8</td>
-                <td>+11.4 pp</td>
-                <td>58</td>
-                <td>1</td>
-                <td>3.3B / 4.0M</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>pi0.5*</td>
-                <td>LIBERO-Goal (500)</td>
-                <td>70.4</td>
-                <td>84.2</td>
-                <td>+13.8 pp</td>
-                <td>83</td>
-                <td>14</td>
-                <td>3.3B / 4.0M</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>pi0.5*</td>
-                <td>LIBERO-10 (500)</td>
-                <td>68.6</td>
-                <td>84.6</td>
-                <td>+16.0 pp</td>
-                <td>115</td>
-                <td>35</td>
-                <td>3.3B / 4.0M</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>SmolVLA</td>
-                <td>LIBERO-Spatial (500)</td>
-                <td>66.4</td>
-                <td>68.6</td>
-                <td>+2.2 pp</td>
-                <td>102</td>
-                <td>91</td>
-                <td>450.05M / 5.18M</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>SmolVLA</td>
-                <td>LIBERO-Object (500)</td>
-                <td>80.8</td>
-                <td>81.8</td>
-                <td>+1.0 pp</td>
-                <td>55</td>
-                <td>50</td>
-                <td>450.05M / 5.18M</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>SmolVLA</td>
-                <td>LIBERO-Goal (500)</td>
-                <td>73.0</td>
-                <td>77.4</td>
-                <td>+4.4 pp</td>
-                <td>72</td>
-                <td>50</td>
-                <td>450.05M / 5.18M</td>
-              </tr>
-              <tr>
-                <td>VLA</td>
-                <td>SmolVLA</td>
-                <td>LIBERO-10 (500)</td>
-                <td>33.4</td>
-                <td>35.0</td>
-                <td>+1.6 pp</td>
-                <td>77</td>
-                <td>69</td>
-                <td>450.05M / 5.18M</td>
-              </tr>
+              <tr><td>Policy</td><td>ACT</td><td>Insertion (300)</td><td>34.0</td><td>55.7</td><td>+21.7</td><td>+90</td><td>−25</td><td>83.92 / 0.160</td></tr>
+              <tr><td>Policy</td><td>ACT</td><td>Transfer (300)</td><td>89.3</td><td>95.3</td><td>+6.0</td><td>+30</td><td>−12</td><td>83.92 / 0.160</td></tr>
+              <tr><td>Policy</td><td>DP</td><td>Square (250)</td><td>81.6</td><td>92.0</td><td>+10.4</td><td>+38</td><td>−12</td><td>65.88 / 0.682</td></tr>
+              <tr><td>Policy</td><td>DP</td><td>Transport (250)</td><td>76.0</td><td>84.0</td><td>+8.0</td><td>+39</td><td>−19</td><td>66.92 / 0.709</td></tr>
+              <tr><td>VLA</td><td>&pi;<sub>0.5</sub></td><td>Spatial (400)</td><td>89.5</td><td>95.8</td><td>+6.3</td><td>+34</td><td>−9</td><td>3300 / 4.0</td></tr>
+              <tr><td>VLA</td><td>&pi;<sub>0.5</sub></td><td>Object (400)</td><td>75.8</td><td>93.5</td><td>+17.8</td><td>+83</td><td>−12</td><td>3300 / 4.0</td></tr>
+              <tr><td>VLA</td><td>&pi;<sub>0.5</sub></td><td>Goal (400)</td><td>76.0</td><td>85.5</td><td>+9.5</td><td>+53</td><td>−15</td><td>3300 / 4.0</td></tr>
+              <tr><td>VLA</td><td>&pi;<sub>0.5</sub></td><td>LIBERO-10 (400)</td><td>57.3</td><td>81.5</td><td>+24.3</td><td>+111</td><td>−14</td><td>3300 / 4.0</td></tr>
+              <tr><td>VLA</td><td>&pi;<sub>0.5</sub> shared</td><td>Spatial (400)</td><td>89.5</td><td>96.0</td><td>+6.5</td><td>+34</td><td>−8</td><td>3300 / 4.0</td></tr>
+              <tr><td>VLA</td><td>&pi;<sub>0.5</sub> shared</td><td>Object (400)</td><td>75.8</td><td>92.3</td><td>+16.5</td><td>+80</td><td>−14</td><td>3300 / 4.0</td></tr>
+              <tr><td>VLA</td><td>&pi;<sub>0.5</sub> shared</td><td>Goal (400)</td><td>76.0</td><td>84.8</td><td>+8.8</td><td>+51</td><td>−16</td><td>3300 / 4.0</td></tr>
+              <tr><td>VLA</td><td>&pi;<sub>0.5</sub> shared</td><td>LIBERO-10 (400)</td><td>57.3</td><td>80.3</td><td>+23.0</td><td>+112</td><td>−20</td><td>3300 / 4.0</td></tr>
+              <tr><td>VLA</td><td>OpenVLA-OFT</td><td>Spatial (3×500)</td><td>92.8</td><td>93.4</td><td>+0.6</td><td>+8.7</td><td>−5.7</td><td>7540 / 7.66</td></tr>
+              <tr><td>VLA</td><td>OpenVLA-OFT</td><td>Object (3×500)</td><td>98.8</td><td>99.1</td><td>+0.3</td><td>+5.0</td><td>−3.3</td><td>7540 / 7.66</td></tr>
+              <tr><td>VLA</td><td>OpenVLA-OFT</td><td>Goal (3×500)</td><td>96.4</td><td>97.3</td><td>+0.9</td><td>+9.3</td><td>−5.0</td><td>7540 / 7.66</td></tr>
+              <tr><td>VLA</td><td>OpenVLA-OFT</td><td>LIBERO-10 (3×500)</td><td>95.2</td><td>96.0</td><td>+0.8</td><td>+11.0</td><td>−7.0</td><td>7540 / 7.66</td></tr>
             </tbody>
           </table>
         </div>
@@ -541,126 +172,117 @@
     <section class="section section--light" id="analysis">
       <div class="container">
         <div class="section-heading">
-          <h2>Ablations and Diagnostics</h2>
-          <p>
-            Paired rescue and harm counts are central to understanding when a
-            residual intervention repairs a base rollout and when it over-corrects.
-          </p>
+          <p class="eyebrow">Analysis</p>
+          <h2>When refinement helps, and what it costs</h2>
+          <p>The same-run checkpoint study isolates base competence, while the context comparison examines what information the refiner needs.</p>
         </div>
-        <div class="figure-grid diagnostic-grid">
-          <figure class="media-frame">
-            <img src="static/images/act_ablation_compact.png" alt="ACT horizon and residual-strength ablations">
-            <figcaption>ACT horizon and residual-strength ablations from the paper.</figcaption>
+        <div class="analysis-grid">
+          <figure class="paper-figure">
+            <img src="static/images/figure3_act_horizon.png" alt="ACT success across refinement horizons under direct chunk execution and temporal aggregation">
+            <figcaption>ACT execution rules favor different editable horizons.</figcaption>
           </figure>
-          <figure class="media-frame">
-            <img src="static/images/dp_ablation_compact.png" alt="Diffusion Policy context and refiner-checkpoint ablations">
-            <figcaption>DP context and refiner-checkpoint ablations.</figcaption>
-          </figure>
-          <figure class="media-frame">
-            <img src="static/images/pi05_alpha_curve.png" alt="pi0.5 residual-strength sweep over LIBERO rollouts">
-            <figcaption>pi0.5 residual-strength sweep over paired LIBERO rollouts.</figcaption>
-          </figure>
-          <figure class="media-frame">
-            <img src="static/images/octo_structure_ablation_bar.png" alt="Octo structure ablation over LIBERO suites">
-            <figcaption>Octo structure ablation over 500 rollouts per suite.</figcaption>
-          </figure>
-          <figure class="media-frame">
-            <img src="static/images/act_checkpoint_diagnostic.png" alt="ACT checkpoint diagnostic from the appendix">
-            <figcaption>Appendix diagnostic for ACT checkpoint behavior.</figcaption>
-          </figure>
-          <figure class="media-frame">
-            <img src="static/images/dp_variant_ablation.png" alt="Diffusion Policy ASRR variant ablation">
-            <figcaption>Appendix DP ASRR variant ablation.</figcaption>
-          </figure>
-          <figure class="media-frame">
-            <img src="static/images/dp_robustness_comparison.png" alt="Diffusion Policy robustness comparison">
-            <figcaption>Appendix DP robustness comparison.</figcaption>
-          </figure>
-          <figure class="media-frame">
-            <img src="static/images/vla_rescue_negative_diagnostic.png" alt="VLA rescue and negative diagnostic">
-            <figcaption>Appendix VLA rescue and negative diagnostic.</figcaption>
+          <figure class="paper-figure">
+            <img src="static/images/figure4_checkpoint_context.png" alt="Pi0.5 base competence and action-only versus context-conditioned refinement comparisons">
+            <figcaption>Earlier capable checkpoints gain more; context improves the tested &pi;<sub>0.5</sub> refiners.</figcaption>
           </figure>
         </div>
-      </div>
-    </section>
-
-    <section class="section" id="rescue-videos">
-      <div class="container">
-        <div class="section-heading">
-          <h2>VLA Rescue Videos</h2>
-          <p>
-            Each VLA policy family occupies two rows: the primary camera first,
-            followed by the wrist camera. Every suite uses two adjacent columns:
-            base failure on the left and ASRR refined rescue on the right.
-          </p>
-        </div>
-
-        <div class="rescue-board-wrap">
-          <div id="rescue-video-board" class="rescue-board" aria-label="Four VLA methods by four LIBERO suites with primary and wrist camera rows"></div>
-        </div>
-        <noscript>
-          <p class="video-card video-card--pending">The rescue video grid requires JavaScript.</p>
-        </noscript>
-        <script src="static/js/rescue-videos.js"></script>
-      </div>
-    </section>
-
-    <section class="section section--light" id="code">
-      <div class="container split split--code">
-        <div class="split__text">
-          <h2>Code Release</h2>
-          <p>
-            The current public code release contains the policy-agnostic ASRR
-            package plus lightweight integration examples for ACT, Diffusion
-            Policy, Octo, OpenVLA-OFT, pi0.5, and SmolVLA. External policy
-            repositories, checkpoints, and datasets are not bundled.
-          </p>
-          <div class="button-row">
-            <a class="button button--dark" href="https://github.com/anonymous-0525/ASRR/tree/main/asrr_core" target="_blank" rel="noopener">
-              <i class="fa-brands fa-github" aria-hidden="true"></i>
-              <span>asrr_core</span>
-            </a>
-            <a class="button button--dark" href="https://github.com/anonymous-0525/ASRR/tree/main/examples" target="_blank" rel="noopener">
-              <i class="fa-solid fa-code" aria-hidden="true"></i>
-              <span>examples</span>
-            </a>
+        <div class="cost-block">
+          <div class="cost-block__text">
+            <h3>Recorded adaptation compute</h3>
+            <p>From the same starting checkpoint, cached ASRR fitting uses fewer recorded GPU-hours than continuing LoRA to the adjacent checkpoint. Cache extraction is the dominant one-time cost and can be reused for compatible refiner variants at the same checkpoint and dataset.</p>
+          </div>
+          <div class="table-wrap table-wrap--compact">
+            <table class="cost-table">
+              <thead><tr><th>Checkpoint pair</th><th>5k→10k</th><th>10k→20k</th><th>20k→30k</th></tr></thead>
+              <tbody>
+                <tr><td>Continued LoRA (GPU-h)</td><td>15.79</td><td>31.51</td><td>31.18</td></tr>
+                <tr><td>ASRR cache + fitting (GPU-h)</td><td>11.81</td><td>11.55</td><td>11.52</td></tr>
+                <tr><td>Compute reduction</td><td><strong>25.2%</strong></td><td><strong>63.3%</strong></td><td><strong>63.1%</strong></td></tr>
+                <tr><td>Success: start→ASRR / later Base</td><td>62.0→80.9 / 74.6</td><td>74.6→89.1 / 91.2</td><td>91.2→96.4 / 91.3</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section class="section" id="videos">
+      <div class="container">
+        <div class="section-heading"><p class="eyebrow">Simulation videos</p><h2>Selected action-sequence rescues</h2><p>Representative Base failures and ASRR successes from policy families evaluated in the paper.</p></div>
+        <div class="method-video-grid">
+          <section class="video-group" aria-labelledby="pi05-video-title">
+            <h3 id="pi05-video-title">&pi;<sub>0.5</sub> · LIBERO-10</h3>
+            <div class="video-pair">
+              <figure class="video-card"><video controls muted playsinline preload="metadata" src="static/videos/vla_rescues/pi05_libero10_base.mp4"></video><figcaption><span class="status status--base">Base failure</span></figcaption></figure>
+              <figure class="video-card"><video controls muted playsinline preload="metadata" src="static/videos/vla_rescues/pi05_libero10_asrr.mp4"></video><figcaption><span class="status status--asrr">ASRR success</span></figcaption></figure>
+            </div>
+          </section>
+          <section class="video-group" aria-labelledby="openvla-video-title">
+            <h3 id="openvla-video-title">OpenVLA-OFT · Goal</h3>
+            <div class="video-pair">
+              <figure class="video-card"><video controls muted playsinline preload="metadata" src="static/videos/vla_rescues/openvla_oft_goal_primary_base.mp4"></video><figcaption><span class="status status--base">Base failure</span></figcaption></figure>
+              <figure class="video-card"><video controls muted playsinline preload="metadata" src="static/videos/vla_rescues/openvla_oft_goal_primary_refined.mp4"></video><figcaption><span class="status status--asrr">ASRR success</span></figcaption></figure>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--light" id="real-robot">
+      <div class="container">
+        <div class="section-heading"><p class="eyebrow">Real-robot evaluation</p><h2>Three Piper manipulation tasks</h2><p>Each method is evaluated over 80 trials per task with the same frozen base policy. Videos play at <strong>2× recorded speed</strong>.</p></div>
+        <div class="robot-task-grid">
+          <section class="robot-task" aria-labelledby="corn-title">
+            <div class="task-heading"><h3 id="corn-title">Corn-to-plate</h3><strong>58/80 → 65/80</strong></div>
+            <figure class="video-card video-card--robot"><div class="video-shell"><video controls muted playsinline preload="metadata" data-playback-rate="2" src="static/videos/real_robot_tasks/corn_to_plate_base.mp4"></video><span class="speed-badge">2×</span></div><figcaption><span class="status status--base">Base failure</span></figcaption></figure>
+            <figure class="video-card video-card--robot"><div class="video-shell"><video controls muted playsinline preload="metadata" data-playback-rate="2" src="static/videos/real_robot_tasks/corn_to_plate_asrr.mp4"></video><span class="speed-badge">2×</span></div><figcaption><span class="status status--asrr">ASRR success</span></figcaption></figure>
+          </section>
+          <section class="robot-task" aria-labelledby="holder-title">
+            <div class="task-heading"><h3 id="holder-title">Block-to-holder</h3><strong>53/80 → 57/80</strong></div>
+            <figure class="video-card video-card--robot"><div class="video-shell"><video controls muted playsinline preload="metadata" data-playback-rate="2" src="static/videos/real_robot_tasks/block_to_holder_base.mp4"></video><span class="speed-badge">2×</span></div><figcaption><span class="status status--base">Base failure</span></figcaption></figure>
+            <figure class="video-card video-card--robot"><div class="video-shell"><video controls muted playsinline preload="metadata" data-playback-rate="2" src="static/videos/real_robot_tasks/block_to_holder_asrr.mp4"></video><span class="speed-badge">2×</span></div><figcaption><span class="status status--asrr">ASRR success</span></figcaption></figure>
+          </section>
+          <section class="robot-task" aria-labelledby="stack-title">
+            <div class="task-heading"><h3 id="stack-title">Block stacking</h3><strong>43/80 → 48/80</strong></div>
+            <figure class="video-card video-card--robot"><div class="video-shell"><video controls muted playsinline preload="metadata" data-playback-rate="2" src="static/videos/real_robot_tasks/block_stacking_base.mp4"></video><span class="speed-badge">2×</span></div><figcaption><span class="status status--base">Base failure</span></figcaption></figure>
+            <figure class="video-card video-card--robot"><div class="video-shell"><video controls muted playsinline preload="metadata" data-playback-rate="2" src="static/videos/real_robot_tasks/block_stacking_asrr.mp4"></video><span class="speed-badge">2×</span></div><figcaption><span class="status status--asrr">ASRR success</span></figcaption></figure>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="code">
+      <div class="container code-layout">
+        <div><p class="eyebrow">Implementation</p><h2>Policy-agnostic refiner core</h2><p class="code-copy">The repository provides the shared ASRR modules and integration examples for action-sequence policies and VLA controllers evaluated in the paper.</p><div class="button-row"><a class="button button--ink" href="https://github.com/anonymous-0525/ASRR/tree/main/asrr_core" target="_blank" rel="noopener"><i class="fa-brands fa-github" aria-hidden="true"></i><span>Core</span></a><a class="button button--ink" href="https://github.com/anonymous-0525/ASRR/tree/main/examples" target="_blank" rel="noopener"><i class="fa-solid fa-code" aria-hidden="true"></i><span>Examples</span></a></div></div>
         <pre class="code-block"><code>from asrr_core import ActionSequenceResidualAdapter, apply_residual
 
-adapter = ActionSequenceResidualAdapter(
+refiner = ActionSequenceResidualAdapter(
     action_dim=7,
     horizon=16,
     fusion_mode="action_only",
     head_type="bounded_dense",
-    max_delta=0.05,
-    freeze_last_action_dim=True,
 )
 
-delta = adapter(base_action)
+delta = refiner(base_action)
 refined = apply_residual(base_action, delta, alpha=1.0)</code></pre>
       </div>
     </section>
 
-    <section class="section" id="citation">
+    <section class="section section--light" id="citation">
       <div class="container content-narrow">
-        <h2>Citation</h2>
-        <p>Citation information will be added after release.</p>
+        <p class="eyebrow">Citation</p><h2>Anonymous submission</h2>
         <pre class="code-block code-block--compact"><code>@misc{asrr2026,
-  title = {ASRR: Action Sequence Residual Refinement for Frozen Vision-Language-Action Policy Adaptation},
+  title = {ASRR: Offline Action Sequence Residual Refinement
+           for Robot Policy Adaptation},
   author = {Anonymous},
   year = {2026},
-  note = {Anonymous submission}
+  note = {Anonymous ICRA 2027 submission}
 }</code></pre>
       </div>
     </section>
   </main>
 
-  <footer class="footer">
-    <div class="container footer__inner">
-      <span>ASRR project page.</span>
-      <span>Layout adapted from the provided BRACE project-page template.</span>
-    </div>
-  </footer>
+  <footer class="footer"><div class="container footer__inner"><span>ASRR project page</span><span>Anonymous ICRA 2027 submission</span></div></footer>
+  <script src="static/js/site.js"></script>
 </body>
 </html>

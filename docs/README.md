@@ -27,7 +27,7 @@ https://anonymous-0525.github.io/ASRR/
   checkpoints, or raw experiment outputs.
 - Keep large files out of this repository. The current static page assets are
   intentionally small enough for normal GitHub Pages hosting.
-- Real-robot clips are shown at 2x playback speed in the browser. The web copies
+- Real-robot clips are shown at 3x playback speed in the browser. The web copies
   use H.264 for browser compatibility; the source recordings are retained
   separately from this repository.
 - When refreshing figures or the paper PDF, run the standard-library tests from

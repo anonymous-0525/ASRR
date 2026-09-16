@@ -1,1 +1,0 @@
-"""Octo + ASRR example helpers."""

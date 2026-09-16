@@ -14,8 +14,7 @@ class ActionSequenceResidualAdapter(nn.Module):
     """Policy-agnostic residual adapter over action chunks.
 
     The module consumes a base action sequence and optional context, then returns
-    a same-shape residual.  It is intentionally independent of ACT, DP, VQ-BeT,
-    and VLA wrappers.  Policy-specific code should only provide tensors.
+    a same-shape residual. Policy-specific code only needs to provide tensors.
 
     Input conventions:
         base_action:    [B, H, D]
@@ -40,10 +39,13 @@ class ActionSequenceResidualAdapter(nn.Module):
         head_type: str = "dense",
         max_delta: Union[None, float, Sequence[float]] = None,
         freeze_last_action_dim: bool = False,
+        action_mask: Union[None, Sequence[float]] = None,
         lowrank_num_basis: int = 4,
         gate_bias_init: float = -5.0,
     ):
         super().__init__()
+        if action_dim <= 0 or horizon <= 0:
+            raise ValueError("action_dim and horizon must be positive")
         valid_fusion_modes = {
             "action_only",
             "state_add",
@@ -159,10 +161,17 @@ class ActionSequenceResidualAdapter(nn.Module):
             self.has_delta_bound = True
         self.register_buffer("max_delta", max_delta_tensor)
 
-        action_mask = torch.ones(self.action_dim, dtype=torch.float32)
+        if action_mask is None:
+            action_mask_tensor = torch.ones(self.action_dim, dtype=torch.float32)
+        else:
+            if len(action_mask) != self.action_dim:
+                raise ValueError("action_mask sequence must match action_dim")
+            action_mask_tensor = torch.tensor(action_mask, dtype=torch.float32)
+            if torch.any((action_mask_tensor < 0) | (action_mask_tensor > 1)):
+                raise ValueError("action_mask values must lie in [0, 1]")
         if freeze_last_action_dim and self.action_dim > 0:
-            action_mask[-1] = 0.0
-        self.register_buffer("action_mask", action_mask)
+            action_mask_tensor[-1] = 0.0
+        self.register_buffer("action_mask", action_mask_tensor)
         self.register_buffer("lowrank_basis", self._make_dct_basis(self.horizon, self.lowrank_num_basis))
 
         self.reset_parameters(gate_bias_init=gate_bias_init)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from typing import Optional, Sequence, Union
 
 import torch
 import torch.nn as nn
@@ -34,7 +35,7 @@ class MixerBlock(nn.Module):
 
 
 class OpenVLAOFTResidualAdapter(nn.Module):
-    """OpenVLA-OFT residual refiner compatible with the local ASRR experiments.
+    """OpenVLA-OFT residual refiner used by the ASRR policy adapter.
 
     Inputs are normalized OpenVLA-OFT action chunks plus VLA action-context
     features.  The module predicts a bounded residual in the same normalized
@@ -53,7 +54,7 @@ class OpenVLAOFTResidualAdapter(nn.Module):
         num_layers: int = 2,
         num_heads: int = 4,
         dropout: float = 0.0,
-        max_delta: list[float] | tuple[float, ...] | float = 0.05,
+        max_delta: Union[float, Sequence[float]] = 0.05,
         gate_bias_init: float = -5.0,
         freeze_gripper: bool = True,
         head_type: str = "sigmoid_gate",
@@ -173,8 +174,8 @@ class OpenVLAOFTResidualAdapter(nn.Module):
         self,
         base_action: torch.Tensor,
         action_context: torch.Tensor,
-        obs_context: torch.Tensor | None = None,
-        task_index: torch.Tensor | None = None,
+        obs_context: Optional[torch.Tensor] = None,
+        task_index: Optional[torch.Tensor] = None,
         return_info: bool = False,
     ):
         if base_action.ndim != 3:

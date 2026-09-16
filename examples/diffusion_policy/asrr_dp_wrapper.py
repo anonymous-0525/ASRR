@@ -14,7 +14,6 @@ def normalize_asrr_variant(variant: str) -> str:
         "obs_add": "asrr_obs_add",
         "mode_embed": "asrr_mode_embed",
         "obs_mode": "asrr_obs_mode",
-        "mode_moe": "asrr_mode_moe",
     }
     return aliases.get(str(variant), str(variant))
 
@@ -22,8 +21,8 @@ def normalize_asrr_variant(variant: str) -> str:
 class DPASRRAdapter(nn.Module):
     """Diffusion Policy wrapper around the policy-agnostic ASRR core.
 
-    This example mirrors the implementation used in the project but does not
-    import the Diffusion Policy repository.  It only assumes tensor inputs.
+    The adapter does not import the Diffusion Policy repository and only assumes
+    aligned action and observation tensors.
     """
 
     def __init__(
@@ -33,7 +32,6 @@ class DPASRRAdapter(nn.Module):
         hidden_dim: int = 256,
         asrr_variant: str = "asrr_obs_add",
         obs_context_dim: int = 0,
-        num_modes: int = 4,
         encoder_type: str = "mlp",
         num_layers: int = 1,
         num_heads: int = 4,
@@ -49,7 +47,6 @@ class DPASRRAdapter(nn.Module):
             "asrr_obs_add",
             "asrr_mode_embed",
             "asrr_obs_mode",
-            "asrr_mode_moe",
         }
         if asrr_variant not in valid:
             raise ValueError(f"Unsupported asrr_variant={asrr_variant}; valid={sorted(valid)}")
@@ -61,13 +58,10 @@ class DPASRRAdapter(nn.Module):
         self.hidden_dim = int(hidden_dim)
         self.asrr_variant = asrr_variant
         self.obs_context_dim = int(obs_context_dim)
-        self.num_modes = int(num_modes)
 
         self.obs_encoder = None
         self.action_sequence_encoder = None
         self.mode_encoder = None
-        self.router = None
-        self.experts = None
 
         if self.asrr_variant == "asrr_action":
             self.core = ActionSequenceResidualAdapter(
@@ -116,45 +110,20 @@ class DPASRRAdapter(nn.Module):
                 nn.Linear(self.hidden_dim, self.hidden_dim),
                 nn.ReLU(inplace=True),
             )
-            if self.asrr_variant in {"asrr_mode_embed", "asrr_obs_mode"}:
-                self.core = ActionSequenceResidualAdapter(
-                    action_dim=self.action_dim,
-                    horizon=self.horizon,
-                    state_context_dim=self.hidden_dim,
-                    hidden_dim=self.hidden_dim,
-                    fusion_mode="state_add",
-                    encoder_type=encoder_type,
-                    num_layers=num_layers,
-                    num_heads=num_heads,
-                    dropout=dropout,
-                    head_type=head_type,
-                    max_delta=max_delta,
-                    freeze_last_action_dim=freeze_last_action_dim,
-                )
-            else:
-                self.router = nn.Linear(self.hidden_dim, self.num_modes)
-                self.experts = nn.ModuleList(
-                    [
-                        ActionSequenceResidualAdapter(
-                            action_dim=self.action_dim,
-                            horizon=self.horizon,
-                            state_context_dim=self.hidden_dim,
-                            hidden_dim=self.hidden_dim,
-                            fusion_mode="state_add",
-                            encoder_type=encoder_type,
-                            num_layers=num_layers,
-                            num_heads=num_heads,
-                            dropout=dropout,
-                            head_type=head_type,
-                            max_delta=max_delta,
-                            freeze_last_action_dim=freeze_last_action_dim,
-                        )
-                        for _ in range(self.num_modes)
-                    ]
-                )
-                nn.init.zeros_(self.router.weight)
-                nn.init.zeros_(self.router.bias)
-                self.core = None
+            self.core = ActionSequenceResidualAdapter(
+                action_dim=self.action_dim,
+                horizon=self.horizon,
+                state_context_dim=self.hidden_dim,
+                hidden_dim=self.hidden_dim,
+                fusion_mode="state_add",
+                encoder_type=encoder_type,
+                num_layers=num_layers,
+                num_heads=num_heads,
+                dropout=dropout,
+                head_type=head_type,
+                max_delta=max_delta,
+                freeze_last_action_dim=freeze_last_action_dim,
+            )
 
     @property
     def uses_obs_context(self) -> bool:
@@ -183,28 +152,7 @@ class DPASRRAdapter(nn.Module):
             return self.core(base_action, state_context=obs_context, return_info=return_info)
 
         mode_context = self._mode_context(base_action, obs_context)
-        if self.asrr_variant in {"asrr_mode_embed", "asrr_obs_mode"}:
-            return self.core(base_action, state_context=mode_context, return_info=return_info)
-
-        mode_probs = torch.softmax(self.router(mode_context), dim=-1)
-        expert_deltas = []
-        expert_infos = []
-        for expert in self.experts:
-            delta_i, info_i = expert(base_action, state_context=mode_context, return_info=True)
-            expert_deltas.append(delta_i)
-            expert_infos.append(info_i)
-        stacked = torch.stack(expert_deltas, dim=1)
-        delta = (mode_probs[:, :, None, None] * stacked).sum(dim=1)
-        info = {
-            "mode_probs": mode_probs,
-            "mode_entropy": -(mode_probs * mode_probs.clamp_min(1e-8).log()).sum(dim=-1).mean(),
-            "delta_abs_mean": delta.abs().mean(),
-        }
-        if expert_infos:
-            info["expert_delta_abs_mean"] = torch.stack([x["delta_abs_mean"] for x in expert_infos]).mean()
-        if return_info:
-            return delta, info
-        return delta
+        return self.core(base_action, state_context=mode_context, return_info=return_info)
 
 
 class ASRRDiffusionPolicyWrapper(nn.Module):
@@ -219,14 +167,19 @@ class ASRRDiffusionPolicyWrapper(nn.Module):
             parameter.requires_grad_(False)
         self.base_policy.eval()
 
+    def train(self, mode: bool = True):
+        super().train(mode)
+        self.base_policy.eval()
+        return self
+
     def reset(self) -> None:
         if hasattr(self.base_policy, "reset"):
             self.base_policy.reset()
 
+    @torch.no_grad()
     def predict_action(self, obs_dict: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
-        with torch.no_grad():
-            result = self.base_policy.predict_action(obs_dict)
-            base_action = result["action"]
+        result = self.base_policy.predict_action(obs_dict)
+        base_action = result["action"]
 
         obs_context = None
         if self.adapter.uses_obs_context:

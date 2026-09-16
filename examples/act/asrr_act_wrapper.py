@@ -12,7 +12,7 @@ def build_act_asrr_refiner(
     *,
     action_dim: int,
     horizon: int,
-    variant: str = "qpos_add",
+    variant: str = "action_only",
     qpos_dim: Optional[int] = None,
     hidden_dim: int = 256,
     encoder_type: str = "mlp",

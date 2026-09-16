@@ -5,18 +5,15 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "asrr"
 version = "0.1.0"
-description = "Action Sequence Residual Refinement for robot policies"
+description = "Offline Action Sequence Residual Refinement for robot policy adaptation"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+    "numpy>=1.23",
     "torch>=2.0",
 ]
 
 [project.optional-dependencies]
-jax = [
-    "jax",
-    "flax",
-]
 dev = [
     "pytest",
 ]

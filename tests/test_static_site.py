@@ -83,6 +83,7 @@ class StaticSiteTests(unittest.TestCase):
             DOCS / "static/images/figure2_method.png",
             DOCS / "static/images/figure3_act_horizon.png",
             DOCS / "static/images/figure4_checkpoint_context.png",
+            DOCS / "static/images/table1_simulation_results.png",
             DOCS / "static/videos/vla_rescues/pi05_libero10_base.mp4",
             DOCS / "static/videos/vla_rescues/pi05_libero10_asrr.mp4",
             DOCS / "static/videos/vla_rescues/openvla_oft_goal_primary_base.mp4",
@@ -106,8 +107,15 @@ class StaticSiteTests(unittest.TestCase):
         self.assertEqual(10, len(video_refs))
         self.assertNotIn("Octo", html)
         self.assertNotIn("SmolVLA", html)
-        self.assertEqual(6, html.count('data-playback-rate="2"'))
-        self.assertEqual(6, html.count('<span class="speed-badge">2×</span>'))
+        self.assertEqual(6, html.count('data-playback-rate="3"'))
+        self.assertEqual(6, html.count('<span class="speed-badge">3×</span>'))
+
+    def test_public_code_scope_matches_final_paper(self):
+        expected = ["act", "diffusion_policy", "pi05", "openvla_oft"]
+        for name in expected:
+            self.assertTrue((ROOT / "examples" / name).is_dir(), name)
+        self.assertFalse((ROOT / "examples" / "octo").exists())
+        self.assertFalse((ROOT / "examples" / "smolvla").exists())
 
 
 if __name__ == "__main__":

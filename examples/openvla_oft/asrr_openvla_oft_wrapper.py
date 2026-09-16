@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union
 
 import numpy as np
 import torch
@@ -122,7 +122,7 @@ class OpenVLAOFTASRRWrapper(nn.Module):
         refiner: nn.Module,
         *,
         alpha: float = 1.0,
-        device: str | torch.device = "cuda",
+        device: Union[str, torch.device] = "cuda",
         unnormalize_fn: Optional[Callable[[np.ndarray], np.ndarray]] = None,
     ):
         super().__init__()

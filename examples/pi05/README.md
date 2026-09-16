@@ -1,51 +1,19 @@
-# pi0.5 + ASRR Example
+# pi0.5 + ASRR
 
-This example provides a pi0.5-style executable-step ASRR wrapper.  It is
-intended for pi0.5 runners that predict an action chunk and execute actions in
-a receding-horizon loop:
+This directory defines the tensor boundary between a frozen pi0.5 runner and
+ASRR. It does not import a private checkout or assume any filesystem layout.
 
-```text
-base action sequence + lightweight state/context -> bounded residual
-alpha sweep at evaluation time
-paired base/refined success accounting
-```
-
-## Interface
-
-Recommended refiner:
-
-```python
-from asrr_core import ExecutableStepResidualAdapter
-```
-
-Expected tensors:
+The external runner returns a policy-native action proposal and any context it
+chooses to expose:
 
 ```text
-base_action:   [B, H, D]
-target_action: [B, H, D]
-obs_context:   optional [B, C]
+base_action:    [B, H, D]
+global_context: optional [B, C]
+step_context:   optional [B, H, C_step]
+task_index:     optional [B]
 ```
 
-Execution:
-
-```text
-delta[:, 0] is applied
-delta[:, 1:] remains zero
-```
-
-## Files
-
-```text
-asrr_pi05_wrapper.py
-```
-
-The wrapper is intentionally generic.  A real pi0.5 runner must provide model
-loading, observation preprocessing, action normalization, and environment action
-conversion.
-
-## Example Alpha Sweep Report Format
-
-| Suite | Best alpha | Base success | Refined success |
-|---|---:|---:|---:|
-| `suite_a` | 1.0 | 70.0% | 78.0% |
-| `suite_b` | 2.0 | 65.0% | 74.0% |
+`build_pi05_refiner` creates either ASRR-A (action only) or ASRR-C (available
+context). `editable_action_dims` builds a coordinate mask so padding or command
+dimensions can remain fixed. The wrapper returns the refined proposal in the
+same action space; normalization and native execution stay in the pi0.5 runner.

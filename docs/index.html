@@ -28,11 +28,10 @@
 </head>
 <body>
   <header class="hero">
-    <div class="hero__overlay"></div>
     <nav class="nav" aria-label="Primary navigation">
       <a class="nav__brand" href="#">ASRR</a>
       <div class="nav__links">
-        <a href="#overview">Overview</a>
+        <a href="#abstract">Overview</a>
         <a href="#method">Method</a>
         <a href="#results">Results</a>
         <a href="#analysis">Analysis</a>
@@ -41,30 +40,50 @@
       </div>
     </nav>
 
-    <div class="hero__content">
-      <p class="kicker">Anonymous ICRA 2027 Submission</p>
-      <h1>ASRR: Offline Action Sequence Residual Refinement for Robot Policy Adaptation</h1>
-      <p class="hero__summary">
-        Treat the action proposal as an editable adaptation interface. ASRR keeps
-        the robot policy frozen and learns a compact residual refiner from cached
-        outputs and existing demonstrations.
-      </p>
-      <div class="button-row" aria-label="Project links">
-        <a class="button button--primary" href="static/files/asrr_paper.pdf" target="_blank" rel="noopener">
-          <i class="fa-solid fa-file-pdf" aria-hidden="true"></i><span>Paper</span>
-        </a>
-        <a class="button button--primary" href="https://github.com/anonymous-0525/ASRR" target="_blank" rel="noopener">
-          <i class="fa-brands fa-github" aria-hidden="true"></i><span>Code</span>
-        </a>
-        <a class="button button--ghost" href="#videos">
-          <i class="fa-solid fa-play" aria-hidden="true"></i><span>Videos</span>
-        </a>
+    <div class="hero__body">
+      <div class="hero__content">
+        <p class="kicker">Anonymous ICRA 2027 Submission</p>
+        <h1>ASRR: Offline Action Sequence Residual Refinement for Robot Policy Adaptation</h1>
+        <p class="hero__summary">
+          Treat the action proposal as an editable adaptation interface. ASRR keeps
+          the robot policy frozen and learns a compact residual refiner from cached
+          outputs and existing demonstrations.
+        </p>
+        <div class="button-row" aria-label="Project links">
+          <a class="button button--primary" href="static/files/asrr_paper.pdf" target="_blank" rel="noopener">
+            <i class="fa-solid fa-file-pdf" aria-hidden="true"></i><span>Paper</span>
+          </a>
+          <a class="button button--primary" href="https://github.com/anonymous-0525/ASRR" target="_blank" rel="noopener">
+            <i class="fa-brands fa-github" aria-hidden="true"></i><span>Code</span>
+          </a>
+          <a class="button button--ghost" href="#videos">
+            <i class="fa-solid fa-play" aria-hidden="true"></i><span>Videos</span>
+          </a>
+        </div>
+      </div>
+      <div class="hero__mosaic" aria-label="ASRR simulation and real-robot examples">
+        <figure class="hero__tile">
+          <img src="static/images/hero_sim_primary.png" alt="Simulation primary-camera view during a refined manipulation rollout">
+          <figcaption>Simulation · primary</figcaption>
+        </figure>
+        <figure class="hero__tile">
+          <img src="static/images/hero_real_corn.png" alt="Piper robot placing corn onto a plate">
+          <figcaption>Real robot · global</figcaption>
+        </figure>
+        <figure class="hero__tile">
+          <img src="static/images/hero_sim_wrist.png" alt="Simulation wrist-camera view during a refined manipulation rollout">
+          <figcaption>Simulation · wrist</figcaption>
+        </figure>
+        <figure class="hero__tile">
+          <img src="static/images/hero_real_holder.png" alt="Piper wrist-camera view while placing a block into a holder">
+          <figcaption>Real robot · wrist</figcaption>
+        </figure>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="section section--light" id="abstract">
+    <section class="section" id="abstract">
       <div class="container content-narrow">
         <p class="eyebrow">Abstract</p>
         <h2>Improve the proposal, keep the policy fixed</h2>
@@ -83,24 +102,6 @@
           modern VLAs, and three real-robot tasks, the results establish predicted
           action sequences as editable adaptation interfaces.
         </p>
-      </div>
-    </section>
-
-    <section class="section" id="overview">
-      <div class="container">
-        <div class="section-heading">
-          <p class="eyebrow">Motivation</p>
-          <h2>An output-space adaptation target</h2>
-          <p>
-            A competent policy may already propose broadly correct behavior while
-            local pose, motion, or timing errors still limit execution. ASRR edits
-            that proposal directly before the controller executes it.
-          </p>
-        </div>
-        <figure class="paper-figure paper-figure--overview">
-          <img src="static/images/figure1_overview.png" alt="ASRR motivation: a trained policy produces a useful but locally inaccurate action sequence that can be edited before execution">
-          <figcaption>Predicted action sequences provide a compact interface for post-training correction.</figcaption>
-        </figure>
       </div>
     </section>
 

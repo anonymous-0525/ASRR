@@ -31,15 +31,10 @@ h3 { font-size: 1.05rem; font-weight: 800; }
 
 .hero {
   position: relative;
-  min-height: min(760px, 90vh);
+  min-height: 630px;
   overflow: hidden;
   color: var(--paper);
-  background: #111a27 url("../images/hero_rescue_refined_primary.png") 72% 48% / cover no-repeat;
-}
-.hero__overlay {
-  position: absolute;
-  inset: 0;
-  background: rgb(10 17 27 / 0.76);
+  background: #111827;
 }
 .nav {
   position: relative;
@@ -55,13 +50,20 @@ h3 { font-size: 1.05rem; font-weight: 800; }
 .nav__links { display: flex; flex-wrap: wrap; gap: 22px; font-size: 0.9rem; font-weight: 700; }
 .nav__links a { color: rgb(255 255 255 / 0.82); text-decoration: none; }
 .nav__links a:hover { color: var(--paper); }
-.hero__content {
+.hero__body {
   position: relative;
   z-index: 2;
+  display: grid;
   width: min(1180px, calc(100% - 40px));
+  min-height: 530px;
+  grid-template-columns: minmax(0, 1.18fr) minmax(360px, 0.82fr);
+  align-items: center;
+  gap: clamp(36px, 6vw, 82px);
   margin: 0 auto;
-  padding: clamp(80px, 14vh, 145px) 0 90px;
+  padding: 44px 0 66px;
 }
+.hero h1 { max-width: 680px; font-size: clamp(2.2rem, 4vw, 3.7rem); }
+.hero__content { min-width: 0; }
 .kicker, .eyebrow {
   margin-bottom: 14px;
   font-size: 0.78rem;
@@ -72,10 +74,39 @@ h3 { font-size: 1.05rem; font-weight: 800; }
 .kicker { color: #c6dcf4; }
 .eyebrow { color: var(--base); }
 .hero__summary {
-  max-width: 760px;
+  max-width: 650px;
   margin-top: 24px;
   color: rgb(255 255 255 / 0.86);
   font-size: clamp(1.02rem, 1.8vw, 1.25rem);
+}
+.hero__mosaic {
+  display: grid;
+  width: 100%;
+  max-width: 470px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  justify-self: end;
+}
+.hero__tile {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 5px;
+  background: #202a38;
+}
+.hero__tile img { width: 100%; height: 100%; object-fit: cover; }
+.hero__tile figcaption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 6px 8px;
+  background: rgb(10 17 27 / 0.78);
+  color: rgb(255 255 255 / 0.88);
+  font-size: 0.68rem;
+  font-weight: 700;
 }
 .button-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
 .button {
@@ -117,7 +148,6 @@ h3 { font-size: 1.05rem; font-weight: 800; }
   box-shadow: var(--shadow);
 }
 .paper-figure img { width: 100%; height: auto; object-fit: contain; }
-.paper-figure--overview { max-width: 560px; margin: 0 auto; }
 .paper-figure--method { margin-bottom: 26px; }
 .paper-table { max-width: 1080px; margin: 0 auto; }
 .paper-figure figcaption, .video-card figcaption {
@@ -218,23 +248,25 @@ tbody tr:last-child td { border-bottom: 0; }
 .footer__inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px; }
 
 @media (max-width: 980px) {
+  .hero__body { grid-template-columns: minmax(0, 1fr) minmax(310px, 0.7fr); gap: 30px; }
   .feature-grid, .metric-grid, .robot-task-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .analysis-grid, .cost-block, .code-layout { grid-template-columns: 1fr; }
   .cost-block { align-items: start; }
 }
 
 @media (max-width: 720px) {
-  .hero { min-height: 720px; }
+  .hero { min-height: 0; }
   .nav { align-items: flex-start; flex-direction: column; gap: 12px; }
   .nav__links { gap: 10px 16px; }
-  .hero__content { padding-top: 70px; }
+  .hero__body { min-height: 0; grid-template-columns: 1fr; gap: 34px; padding: 42px 0 52px; }
+  .hero__mosaic { max-width: 560px; justify-self: start; }
   .section { padding: 58px 0; }
   .feature-grid, .metric-grid, .method-video-grid, .robot-task-grid { grid-template-columns: 1fr; }
   .analysis-grid .paper-figure img { min-height: 0; }
 }
 
 @media (max-width: 470px) {
-  .container, .nav, .hero__content { width: min(100% - 26px, 1180px); }
+  .container, .nav, .hero__body { width: min(100% - 26px, 1180px); }
   .video-pair { grid-template-columns: 1fr; }
   .button { width: 100%; }
   .task-heading { align-items: flex-start; flex-direction: column; }

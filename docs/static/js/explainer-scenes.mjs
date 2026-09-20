@@ -2,71 +2,114 @@ import { CHAPTERS } from "./explainer-model.mjs";
 
 const CHAPTER_COPY = [
   {
-    title: "A useful proposal with one local error",
-    takeaway: "A broadly correct action sequence can still fail because one local deviation disrupts execution.",
+    title: "A useful proposal can still contain a local error",
+    takeaway: "The arm follows a broadly useful action proposal until one local deviation disrupts execution.",
     input: "Frozen policy proposal A_base",
-    change: "Inspect the highlighted near-future action",
-    evidence: "Illustrative teaching values",
+    change: "Follow each action from a0 through a7",
+    evidence: "Illustrative action-space projection",
   },
   {
-    title: "The proposal is an editable interface",
-    takeaway: "The policy exposes a temporally structured sequence before physical execution.",
-    input: "Ordered proposal tokens a0 through a7",
-    change: "Preserve action identity while unfolding the sequence",
-    evidence: "Method definition from the paper",
+    title: "Make the proposal the editable interface",
+    takeaway: "ASRR keeps the base policy fixed and redirects adaptation to the action it already produced.",
+    input: "Observation, instruction, and Base action",
+    change: "Compare policy updates with proposal editing",
+    evidence: "Method interface from the paper",
   },
   {
-    title: "Predict a bounded residual, not a new policy",
-    takeaway: "A compact refiner edits selected coordinates while the generating policy remains frozen.",
-    input: "A_base with optional policy context",
-    change: "Compose alpha times a masked residual with the proposal",
-    evidence: "Illustrative teaching values",
+    title: "Refine actions alone or add policy-side data",
+    takeaway: "A compact refiner predicts bounded local edits from the proposal, optionally conditioned on policy-side information.",
+    input: "A_base, optionally with state, mode, or generation features",
+    change: "Apply a masked residual at each active action",
+    evidence: "Illustrative geometry, displacement enlarged for clarity",
   },
   {
-    title: "Preserve the controller's native execution rule",
-    takeaway: "ASRR changes the proposal while the base controller retains its original execution and replanning protocol.",
-    input: "Refined proposal and native execution operator",
-    change: "Consume the executable prefix, then replan",
-    evidence: "Method contract from the paper",
-  },
-  {
-    title: "The interface transfers across policy families",
-    takeaway: "Recorded simulation and real-robot evaluations support the same output-space correction interface.",
-    input: "Frozen policy proposals across five evidence cases",
-    change: "Compare recorded Base and ASRR executions",
+    title: "Compare recorded Base and ASRR executions",
+    takeaway: "Paired simulation and physical executions show the same action-editing interface beyond the schematic.",
+    input: "Recorded pi0.5 and Piper executions",
+    change: "Play Base failure beside ASRR success",
     evidence: "Recorded execution and measured aggregate",
   },
 ];
+
+function clamp(value, minimum, maximum) {
+  return Math.min(maximum, Math.max(minimum, value));
+}
 
 function point(action, key = "base") {
   const [x, y] = action[key];
   return [70 + x * 760, 54 + y * 350];
 }
 
-function trajectoryPath(actions, key) {
-  return actions
-    .map((action, index) => {
-      const [x, y] = point(action, key);
-      return `${index === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
-    })
-    .join(" ");
+function projectedPoint(values) {
+  return [70 + values[0] * 760, 54 + values[1] * 350];
 }
 
-function actionPoints(state, key, className) {
+function illustrativeRefined(action) {
+  const scale = action.localError ? 3.6 : 2.45;
+  return [
+    action.base[0] + action.residual[0] * scale,
+    action.base[1] + action.residual[1] * scale,
+  ];
+}
+
+function trajectoryPath(actions, accessor) {
+  return actions.map((action, index) => {
+    const [x, y] = projectedPoint(accessor(action));
+    return `${index === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
+  }).join(" ");
+}
+
+export function armGeometry([x, y], {
+  origin = [155, 386],
+  upper = 335,
+  lower = 335,
+} = {}) {
+  const dx = x - origin[0];
+  const dy = y - origin[1];
+  const distance = Math.hypot(dx, dy);
+  const reach = clamp(distance, Math.abs(upper - lower) + 1, upper + lower - 1);
+  const heading = Math.atan2(dy, dx);
+  const cosine = clamp(
+    (upper ** 2 + reach ** 2 - lower ** 2) / (2 * upper * reach),
+    -1,
+    1,
+  );
+  const elbowOffset = Math.acos(cosine);
+  const elbow = [
+    origin[0] + upper * Math.cos(heading + elbowOffset),
+    origin[1] + upper * Math.sin(heading + elbowOffset),
+  ];
+  const gripper = [
+    [x + 13 * Math.cos(heading - 0.52), y + 13 * Math.sin(heading - 0.52)],
+    [x + 13 * Math.cos(heading + 0.52), y + 13 * Math.sin(heading + 0.52)],
+  ];
+  return { base: [...origin], elbow, wrist: [x, y], gripper };
+}
+
+function robotArm(target, role, className = "") {
+  const arm = armGeometry(target);
+  return `<g class="robot-arm ${className}" data-arm="${role}">
+    <line class="robot-link robot-link--upper" x1="${arm.base[0]}" y1="${arm.base[1]}" x2="${arm.elbow[0].toFixed(1)}" y2="${arm.elbow[1].toFixed(1)}"></line>
+    <line class="robot-link robot-link--lower" x1="${arm.elbow[0].toFixed(1)}" y1="${arm.elbow[1].toFixed(1)}" x2="${arm.wrist[0]}" y2="${arm.wrist[1]}"></line>
+    <circle class="robot-base" cx="${arm.base[0]}" cy="${arm.base[1]}" r="18"></circle>
+    <circle class="robot-joint" cx="${arm.elbow[0].toFixed(1)}" cy="${arm.elbow[1].toFixed(1)}" r="11"></circle>
+    <circle class="robot-wrist" cx="${arm.wrist[0]}" cy="${arm.wrist[1]}" r="9"></circle>
+    <line class="robot-gripper" x1="${arm.wrist[0]}" y1="${arm.wrist[1]}" x2="${arm.gripper[0][0].toFixed(1)}" y2="${arm.gripper[0][1].toFixed(1)}"></line>
+    <line class="robot-gripper" x1="${arm.wrist[0]}" y1="${arm.wrist[1]}" x2="${arm.gripper[1][0].toFixed(1)}" y2="${arm.gripper[1][1].toFixed(1)}"></line>
+  </g>`;
+}
+
+function actionHistoryPoints(state) {
   return state.actions.map((action) => {
-    const [x, y] = point(action, key);
-    const selected = action.id === state.selectedActionId;
-    return `<g class="action-point ${selected ? "is-selected" : ""}" data-trajectory-id="${action.id}" data-step="${action.index}" tabindex="0" role="button" aria-label="Select action ${action.id}">
-      <circle class="${className}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${selected ? 10 : 6}"></circle>
-      ${selected ? `<text x="${(x + 12).toFixed(1)}" y="${(y - 13).toFixed(1)}">${action.id}</text>` : ""}
+    const [x, y] = point(action, "base");
+    const status = action.index === state.selectedStep
+      ? "is-current"
+      : action.index <= state.visitedThrough ? "is-visited" : "is-future";
+    return `<g class="action-point ${status}" data-trajectory-id="${action.id}" data-action-label="${action.id}" data-step="${action.index}" tabindex="0" role="button" aria-label="Select action ${action.id}">
+      <circle class="point--history" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${status === "is-current" ? 11 : 7}"></circle>
+      <text x="${(x + 11).toFixed(1)}" y="${(y - 13).toFixed(1)}">${action.id}</text>
     </g>`;
   }).join("");
-}
-
-function tokenStrip(state) {
-  return `<div class="token-strip" aria-label="Predicted action sequence">
-    ${state.actions.map((action) => `<button type="button" class="action-token ${action.id === state.selectedActionId ? "is-selected" : ""}" data-token-id="${action.id}" data-step="${action.index}" aria-pressed="${action.id === state.selectedActionId}"><span>${action.id}</span><small>t+${action.index}</small></button>`).join("")}
-  </div>`;
 }
 
 function sceneFrame(state, content, label = "Illustrative") {
@@ -77,98 +120,113 @@ function sceneFrame(state, content, label = "Illustrative") {
 }
 
 function localErrorScene(state) {
-  const errorAction = state.actions.find((action) => action.localError);
-  const [x, y] = point(errorAction, "base");
-  return sceneFrame(state, `<div class="diagram-wrap">
-    <svg class="trajectory-svg" viewBox="0 0 900 455" role="img" aria-label="Illustrative action proposal with a local deviation">
+  const active = state.actions[state.selectedStep];
+  const activePoint = projectedPoint(state.arm.base);
+  const errorPoint = point(state.actions.find((action) => action.localError), "base");
+  const errorReached = state.selectedStep >= 5;
+  return sceneFrame(state, `<div class="diagram-wrap local-error-stage">
+    <svg class="trajectory-svg" viewBox="0 0 900 455" role="img" aria-label="Robot arm following eight labelled actions toward one local error">
       <path class="diagram-grid" d="M70 390H840M70 310H840M70 230H840M70 150H840M170 70V420M330 70V420M490 70V420M650 70V420M810 70V420"></path>
-      <rect class="target-zone" x="775" y="72" width="70" height="70" rx="8"></rect>
-      <text class="svg-label" x="782" y="62">target</text>
-      <path class="trajectory trajectory--base" d="${trajectoryPath(state.actions, "base")}"></path>
-      ${actionPoints(state, "base", "point--base")}
-      <circle class="error-pulse" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="22"></circle>
-      <path class="error-callout" d="M${(x + 16).toFixed(1)} ${(y - 17).toFixed(1)} L${(x + 92).toFixed(1)} ${(y - 74).toFixed(1)}"></path>
-      <text class="svg-callout" x="${(x + 99).toFixed(1)}" y="${(y - 77).toFixed(1)}">local error</text>
+      <rect class="target-zone" x="774" y="72" width="72" height="70" rx="8"></rect>
+      <text class="svg-label" x="780" y="62">target region</text>
+      <path class="trajectory trajectory--history" d="${trajectoryPath(state.actions, (action) => action.base)}"></path>
+      ${actionHistoryPoints(state)}
+      ${robotArm(activePoint, "active", "robot-arm--active")}
+      <circle class="error-pulse ${errorReached ? "is-visible" : ""}" cx="${errorPoint[0].toFixed(1)}" cy="${errorPoint[1].toFixed(1)}" r="25"></circle>
+      <path class="error-callout ${errorReached ? "is-visible" : ""}" d="M${(errorPoint[0] + 18).toFixed(1)} ${(errorPoint[1] - 18).toFixed(1)} Q${(errorPoint[0] + 62).toFixed(1)} ${(errorPoint[1] - 76).toFixed(1)} ${(errorPoint[0] + 128).toFixed(1)} ${(errorPoint[1] - 82).toFixed(1)}"></path>
+      <text class="svg-callout ${errorReached ? "is-visible" : ""}" x="${(errorPoint[0] + 134).toFixed(1)}" y="${(errorPoint[1] - 84).toFixed(1)}">local error</text>
     </svg>
   </div>
-  ${tokenStrip(state)}
-  <button class="recorded-evidence-chip" type="button" data-evidence-case="pi05-libero10">Recorded Base failure <span aria-hidden="true">&#8599;</span></button>`);
+  <button class="recorded-evidence-chip" type="button" data-evidence-case="pi05-libero10">Open a recorded failure <span aria-hidden="true">&#8599;</span></button>`);
 }
 
-function editableProposalScene(state) {
-  const reveal = Math.max(1, Math.ceil(state.chapterProgress * state.actions.length));
-  return sceneFrame(state, `<div class="proposal-layout">
-    <div class="frozen-policy-block"><span>Frozen policy</span><strong>f_base</strong><small>observation + instruction</small></div>
-    <div class="proposal-arrow" aria-hidden="true">&#8594;</div>
-    <div class="proposal-output"><span class="block-label">Structured output</span>${tokenStrip(state)}</div>
-  </div>
-  <svg class="identity-links" viewBox="0 0 900 230" aria-label="Action identities preserved from trajectory to tokens">
-    <path class="trajectory trajectory--base" d="${trajectoryPath(state.actions, "base")}"></path>
-    ${state.actions.map((action, index) => {
-      const [x, y] = point(action, "base");
-      return `<g data-trajectory-id="${action.id}" class="action-point ${action.id === state.selectedActionId ? "is-selected" : ""}" opacity="${index < reveal ? 1 : 0.18}"><circle class="point--base" cx="${x}" cy="${Math.max(28, y - 180)}" r="${action.id === state.selectedActionId ? 10 : 6}"></circle><text x="${x - 8}" y="${Math.max(20, y - 197)}">${action.id}</text></g>`;
-    }).join("")}
-  </svg>`, "Method interface");
+function laneArm(state, key, role, className) {
+  const action = state.actions[state.selectedStep];
+  const scale = action.localError ? 3.6 : 2.45;
+  const values = key === "refined"
+    ? state.arm.base.map((value, coordinate) => value + action.residual[coordinate] * scale)
+    : state.arm.base;
+  const [x, y] = projectedPoint(values);
+  return `<svg class="interface-arm" viewBox="0 0 900 455" aria-hidden="true">
+    <path class="interface-ground" d="M75 400H845"></path>
+    ${robotArm([x, y], role, className)}
+    <circle class="interface-action ${key === "refined" ? "interface-action--refined" : ""}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12"></circle>
+  </svg>`;
 }
 
-function residualArrows(state) {
-  return state.actions.slice(0, state.refinementHorizon).map((action) => {
-    const [bx, by] = point(action, "base");
-    const [rx, ry] = point(action, "refined");
-    return `<path class="residual-arrow ${action.id === state.selectedActionId ? "is-selected" : ""}" d="M${bx} ${by} L${rx} ${ry}" marker-end="url(#arrowhead)" data-residual-id="${action.id}"></path>`;
+function editableInterfaceScene(state) {
+  return sceneFrame(state, `<div class="adaptation-compare">
+    <section class="adaptation-lane adaptation-lane--policy">
+      <div class="lane-heading"><span>Conventional adaptation</span><strong>Adapt the policy</strong></div>
+      <div class="lane-flow">
+        <div class="mini-block">Observation + instruction</div><span>&#8594;</span>
+        <div class="mini-block mini-block--policy">Policy parameters<small>additional optimization</small></div><span>&#8594;</span>
+        <div class="mini-block">Robot action</div>
+      </div>
+      ${laneArm(state, "base", "policy-output", "robot-arm--base")}
+    </section>
+    <section class="adaptation-lane adaptation-lane--asrr">
+      <div class="lane-heading"><span>ASRR</span><strong>Edit the proposal</strong></div>
+      <div class="lane-flow lane-flow--asrr">
+        <div class="mini-block mini-block--frozen">Frozen policy</div><span>&#8594;</span>
+        <div class="mini-block mini-block--proposal">Editable action proposal</div><span>&#8594;</span>
+        <div class="mini-block mini-block--refiner">Residual refiner</div>
+      </div>
+      ${laneArm(state, "refined", "editable-output", "robot-arm--refined")}
+    </section>
+  </div>`, "Adaptation target");
+}
+
+function residualCurves(state, refinedValues) {
+  return state.actions.slice(0, state.refinementHorizon).map((action, index) => {
+    const [bx, by] = projectedPoint(action.base);
+    const [rx, ry] = projectedPoint(refinedValues[index]);
+    const cx = (bx + rx) / 2 + 11;
+    const cy = (by + ry) / 2 - 18;
+    return `<path class="residual-curve ${action.id === state.selectedActionId ? "is-current" : ""}" d="M${bx.toFixed(1)} ${by.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${rx.toFixed(1)} ${ry.toFixed(1)}" marker-end="url(#residual-head)" data-residual-id="${action.id}"></path>`;
   }).join("");
 }
 
 function residualScene(state) {
-  const context = state.variant === "C" ? `<div class="context-block" data-context-path><span>Optional input</span><strong>Policy context</strong><small>global + step-aligned</small></div><div class="flow-arrow flow-arrow--context" data-context-path aria-hidden="true">&#8595;</div>` : "";
-  return sceneFrame(state, `<div class="refiner-flow">
-    <div class="flow-block flow-block--base"><span>Frozen proposal</span><strong>A<sub>base</sub></strong></div>
-    <div class="flow-arrow" aria-hidden="true">&#8594;</div>
-    <div class="flow-stack">${context}<div class="flow-block flow-block--refiner"><span>Compact sequence refiner</span><strong>R<sub>&theta;</sub></strong><small>${state.variant === "A" ? "action only" : "context conditioned"}</small></div></div>
-    <div class="flow-arrow" aria-hidden="true">&#8594;</div>
-    <div class="flow-block flow-block--residual"><span>Bounded residual</span><strong>&Delta;A</strong><small>mask M + scale &alpha;</small></div>
+  const refinedValues = state.actions.map(illustrativeRefined);
+  const active = state.actions[state.selectedStep];
+  const basePoint = projectedPoint(state.arm.base);
+  const scale = active.localError ? 3.6 : 2.45;
+  const movingRefined = state.arm.base.map((value, coordinate) =>
+    value + active.residual[coordinate] * scale);
+  const refinedPoint = projectedPoint(state.before ? state.arm.base : movingRefined);
+  const context = state.variant === "C" ? `<div class="policy-data" data-context-path>
+    <span>Policy-side data</span><strong>state + mode + generation features</strong>
+  </div><div class="context-link" data-context-path aria-hidden="true">&#8600;</div>` : "";
+  return sceneFrame(state, `<div class="residual-mode-row">
+    <div class="mode-pill is-active"><strong>ASRR-${state.variant}</strong><span>${state.variant === "A" ? "action proposal only" : "proposal + policy-side data"}</span></div>
+    ${context}
+    <div class="refiner-node"><span>Compact refiner</span><strong>&Delta;A</strong></div>
+    <div class="method-status"><span>Base policy frozen</span><span>Native execution preserved</span></div>
   </div>
-  <div class="refinement-diagram">
-    <svg class="trajectory-svg" viewBox="0 0 900 455" role="img" aria-label="Base proposal, residual vectors, and refined proposal">
-      <defs><marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="5" markerUnits="userSpaceOnUse" orient="auto"><polygon points="0 0, 10 5, 0 10"></polygon></marker></defs>
+  <div class="refinement-diagram arm-comparison">
+    <svg class="trajectory-svg" viewBox="0 0 900 455" role="img" aria-label="Ghost Base arm and opaque Refined arm with curved residual corrections">
+      <defs><marker id="residual-head" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><polygon points="0 0, 9 4.5, 0 9"></polygon></marker></defs>
       <path class="diagram-grid" d="M70 390H840M70 310H840M70 230H840M70 150H840M170 70V420M330 70V420M490 70V420M650 70V420M810 70V420"></path>
-      <path class="trajectory trajectory--base" d="${trajectoryPath(state.actions, "base")}"></path>
-      <path class="trajectory trajectory--refined" d="${trajectoryPath(state.actions, "refined")}"></path>
-      ${residualArrows(state)}
-      ${actionPoints(state, state.before ? "base" : "refined", state.before ? "point--base" : "point--refined")}
+      <path class="trajectory trajectory--history trajectory--ghost" d="${trajectoryPath(state.actions, (action) => action.base)}"></path>
+      <path class="trajectory trajectory--refined" d="${trajectoryPath(state.actions, (action) => state.before ? action.base : illustrativeRefined(action))}"></path>
+      ${state.before ? "" : residualCurves(state, refinedValues)}
+      ${robotArm(basePoint, "base-ghost", "robot-arm--ghost")}
+      ${robotArm(refinedPoint, "refined", "robot-arm--refined")}
+      <text class="arm-label arm-label--base" x="95" y="80">Base arm</text>
+      <text class="arm-label arm-label--refined" x="95" y="105">Refined arm</text>
     </svg>
-    ${tokenStrip(state)}
-  </div>`);
-}
-
-function nativeExecutionScene(state) {
-  const progress = Math.min(state.refinementHorizon, Math.max(0, Math.floor(state.chapterProgress * (state.refinementHorizon + 1))));
-  return sceneFrame(state, `<div class="execution-flow">
-    <div class="flow-block flow-block--refined"><span>Edited proposal</span><strong>A<sub>refined</sub></strong></div>
-    <div class="flow-arrow" aria-hidden="true">&#8594;</div>
-    <div class="native-operator"><span>Base execution operator</span><strong>E<sub>base</sub></strong><small>native horizon + replanning rule</small></div>
-    <div class="flow-arrow" aria-hidden="true">&#8594;</div>
-    <div class="flow-block"><span>Robot command</span><strong>A<sub>exec</sub></strong></div>
-  </div>
-  <div class="horizon-panel">
-    <div class="horizon-labels"><span>prediction horizon H<sub>p</sub></span><span>editable prefix H<sub>r</sub></span></div>
-    <div class="execution-tokens">
-      ${state.actions.map((action, index) => `<button type="button" class="execution-token ${index < state.refinementHorizon ? "is-editable" : "is-retained"} ${index < progress ? "is-executed" : ""}" data-token-id="${action.id}" data-trajectory-id="${action.id}" data-step="${index}" aria-label="Action ${action.id}, ${index < progress ? "executed" : index < state.refinementHorizon ? "editable" : "retained"}"><span>${action.id}</span><small>${index < progress ? "executed" : index < state.refinementHorizon ? "edited" : "base"}</small></button>`).join("")}
-    </div>
-    <div class="replan-marker" style="--replan-step:${progress}"><span>replan</span></div>
-  </div>`, "Execution contract");
+    <div class="illustration-note">Illustrative action-space view. Residual displacement enlarged for clarity.</div>
+  </div>`, "Method animation");
 }
 
 const EVIDENCE_CASES = [
   ["pi05-libero10", "pi0.5", "LIBERO-10", "pi05-base.png", "pi05-asrr.png"],
-  ["openvla-goal", "OpenVLA-OFT", "LIBERO Goal", "openvla-base.png", "openvla-asrr.png"],
   ["corn", "Piper", "Corn to plate", "corn-base.png", "corn-asrr.png"],
-  ["holder", "Piper", "Block to holder", "holder-base.png", "holder-asrr.png"],
-  ["stack", "Piper", "Block stacking", "stack-base.png", "stack-asrr.png"],
 ];
 
-function evidenceCard([id, policy, task, basePoster, asrrPoster], featured = false) {
-  return `<button type="button" class="evidence-card ${featured ? "is-featured" : ""}" data-evidence-case="${id}">
+function evidenceCard([id, policy, task, basePoster, asrrPoster]) {
+  return `<button type="button" class="evidence-card" data-evidence-case="${id}">
     <span class="evidence-card__heading"><strong>${policy}</strong><small>${task}</small></span>
     <span class="evidence-thumbs"><span><img src="static/images/explainer/${basePoster}" alt="${task} Base rollout poster"><em>Base</em></span><span><img src="static/images/explainer/${asrrPoster}" alt="${task} ASRR rollout poster"><em>ASRR</em></span></span>
     <span class="evidence-card__action">Open recorded pair <span aria-hidden="true">&#8599;</span></span>
@@ -176,17 +234,12 @@ function evidenceCard([id, policy, task, basePoster, asrrPoster], featured = fal
 }
 
 function evidenceScene(state) {
-  const expanded = state.chapterProgress >= 0.3;
-  const cases = expanded ? EVIDENCE_CASES : [EVIDENCE_CASES[0]];
   return sceneFrame(state, `<div class="metric-ribbon" aria-label="Measured aggregate results">
     <div><strong>+14.4 pp</strong><span>pi0.5 mean gain</span></div>
-    <div><strong>62.0 &#8594; 80.9</strong><span>5k checkpoint success</span></div>
     <div><strong>25-63%</strong><span>less recorded compute</span></div>
     <div><strong>+6.7 pp</strong><span>real-robot aggregate</span></div>
   </div>
-  <div class="evidence-wall ${expanded ? "is-expanded" : "is-opening"}" data-evidence-wall>
-    ${cases.map((item, index) => evidenceCard(item, !expanded && index === 0)).join("")}
-  </div>`, "Recorded + measured");
+  <div class="evidence-wall is-expanded" data-evidence-wall>${EVIDENCE_CASES.map(evidenceCard).join("")}</div>`, "Recorded + measured");
 }
 
 function inspectorControls(state) {
@@ -200,7 +253,7 @@ function inspectorControls(state) {
 
 function renderInspector(inspectorElement, state) {
   const copy = CHAPTER_COPY[state.chapterIndex];
-  inspectorElement.innerHTML = `<div class="inspector__header"><div><p class="overline">Current operation</p><span class="chapter-index">${String(state.chapterIndex + 1).padStart(2, "0")} / 05</span></div><span class="evidence-label ${state.chapterIndex === 4 ? "evidence-label--recorded" : "evidence-label--illustrative"}">${state.chapterIndex === 4 ? "Evidence" : "Method"}</span></div>
+  inspectorElement.innerHTML = `<div class="inspector__header"><div><p class="overline">Current operation</p><span class="chapter-index">${String(state.chapterIndex + 1).padStart(2, "0")} / 04</span></div><span class="evidence-label ${state.chapterIndex === 3 ? "evidence-label--recorded" : "evidence-label--illustrative"}">${state.chapterIndex === 3 ? "Evidence" : "Method"}</span></div>
     <h2>${copy.title}</h2>
     <p class="inspector__takeaway"><strong>Takeaway.</strong> ${copy.takeaway}</p>
     <dl class="operation-list">
@@ -213,7 +266,7 @@ function renderInspector(inspectorElement, state) {
 }
 
 export function renderScene(stageElement, inspectorElement, state) {
-  const scenes = [localErrorScene, editableProposalScene, residualScene, nativeExecutionScene, evidenceScene];
+  const scenes = [localErrorScene, editableInterfaceScene, residualScene, evidenceScene];
   stageElement.innerHTML = scenes[state.chapterIndex](state);
   renderInspector(inspectorElement, state);
 }

@@ -101,6 +101,22 @@ function authoredVariant(chapterIndex, chapterProgress) {
   return chapterIndex === 2 && chapterProgress < 0.5 ? "A" : "C";
 }
 
+function sequenceProgress(chapterIndex, chapterProgress) {
+  if (chapterIndex !== 2) return chapterProgress;
+  return chapterProgress < 0.5
+    ? chapterProgress * 2
+    : (chapterProgress - 0.5) * 2;
+}
+
+function interpolateAction(actions, progress, key) {
+  const position = clamp(progress * actions.length, 0, actions.length - 1);
+  const fromIndex = Math.floor(position);
+  const toIndex = Math.min(actions.length - 1, fromIndex + 1);
+  const blend = position - fromIndex;
+  return actions[fromIndex][key].map((value, coordinate) =>
+    value + (actions[toIndex][key][coordinate] - value) * blend);
+}
+
 export function deriveTourState(timeMs, overrides = {}) {
   const clampedTime = clampTime(timeMs);
   const chapter = chapterAtTime(clampedTime);
@@ -126,6 +142,7 @@ export function deriveTourState(timeMs, overrides = {}) {
       ? [...action.base]
       : composeResidual(action.base, action.residual, alpha, action.mask, action.bound),
   }));
+  const motionProgress = sequenceProgress(chapter.index, chapterProgress);
 
   return {
     timeMs: clampedTime,
@@ -143,8 +160,8 @@ export function deriveTourState(timeMs, overrides = {}) {
     refinementHorizon: 6,
     actions,
     arm: {
-      base: [...actions[selectedStep].base],
-      refined: [...actions[selectedStep].refined],
+      base: interpolateAction(actions, motionProgress, "base"),
+      refined: interpolateAction(actions, motionProgress, "refined"),
     },
     context: variant === "C"
       ? {

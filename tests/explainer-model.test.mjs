@@ -59,6 +59,15 @@ test("local error walks from a0 through a7 without skipping", () => {
   }
 });
 
+test("the robot arm interpolates continuously between authored actions", () => {
+  const state = deriveTourState(1_875);
+  const a0 = state.actions[0].base;
+  const a1 = state.actions[1].base;
+
+  assert.ok(state.arm.base[0] > a0[0] && state.arm.base[0] < a1[0]);
+  assert.ok(state.arm.base[1] < a0[1] && state.arm.base[1] > a1[1]);
+});
+
 test("arbitrary seeks preserve stable action identities", () => {
   const times = [120_000, 12_000, 90_000, 60_000, 0, 105_000];
   const identities = times.map((timeMs) =>

@@ -2,11 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { deriveTourState } from "../docs/static/js/explainer-model.mjs";
-import {
-  describeState,
-  renderChapterTabs,
-  renderScene,
-} from "../docs/static/js/explainer-scenes.mjs";
+import * as scenes from "../docs/static/js/explainer-scenes.mjs";
+const { describeState, renderChapterTabs, renderScene } = scenes;
 import {
   bindBeforeAfterRelease,
   createTourController,
@@ -55,29 +52,57 @@ function makeController(initial = 0, storedTheme = null) {
   return { controller, clock, renders, stored };
 }
 
-test("selected action identity is linked across trajectory and token views", () => {
+test("local error renders every labelled action and follows history from a0", () => {
   const stage = new FakeElement();
   const inspector = new FakeElement();
-  const state = deriveTourState(70_000, { selectedStep: 5 });
+  const state = deriveTourState(15_000);
 
   renderScene(stage, inspector, state);
 
-  assert.match(stage.innerHTML, /data-trajectory-id="a5"/);
-  assert.match(stage.innerHTML, /data-token-id="a5"/);
-  assert.match(inspector.innerHTML, /<code>a5<\/code>/);
+  assert.match(stage.innerHTML, /data-arm="active"/);
+  assert.equal((stage.innerHTML.match(/data-action-label=/g) ?? []).length, 8);
+  assert.equal((stage.innerHTML.match(/is-visited/g) ?? []).length, state.visitedThrough + 1);
+  assert.equal((stage.innerHTML.match(/is-current/g) ?? []).length, 1);
+  assert.match(stage.innerHTML, new RegExp(`data-trajectory-id="${state.selectedActionId}"`));
+  assert.match(inspector.innerHTML, new RegExp(`<code>${state.selectedActionId}<\\/code>`));
 });
 
-test("action-only scene omits context while conditioned scene exposes it", () => {
+test("arm geometry reaches the requested wrist with stable joints", () => {
+  assert.equal(typeof scenes.armGeometry, "function");
+  const geometry = scenes.armGeometry([340, 250]);
+  assert.deepEqual(geometry.base, [155, 386]);
+  assert.deepEqual(geometry.wrist, [340, 250]);
+  assert.equal(geometry.elbow.length, 2);
+  assert.ok(geometry.elbow.every(Number.isFinite));
+});
+
+test("editable interface contrasts policy updates with proposal editing", () => {
+  const stage = new FakeElement();
+  const inspector = new FakeElement();
+
+  renderScene(stage, inspector, deriveTourState(45_000));
+
+  assert.match(stage.innerHTML, /Adapt the policy/);
+  assert.match(stage.innerHTML, /Edit the proposal/);
+  assert.match(stage.innerHTML, /Editable action proposal/);
+  assert.doesNotMatch(stage.innerHTML, /token-strip/);
+});
+
+test("residual scene overlays both arms and exposes policy data only for ASRR-C", () => {
   const stage = new FakeElement();
   const inspector = new FakeElement();
 
   renderScene(stage, inspector, deriveTourState(70_000, { variant: "A" }));
+  assert.match(stage.innerHTML, /data-arm="base-ghost"/);
+  assert.match(stage.innerHTML, /data-arm="refined"/);
+  assert.match(stage.innerHTML, /residual-curve/);
   assert.doesNotMatch(stage.innerHTML, /data-context-path/);
-  assert.doesNotMatch(stage.innerHTML, /Policy context/);
+  assert.doesNotMatch(stage.innerHTML, /Policy-side data/);
 
   renderScene(stage, inspector, deriveTourState(70_000, { variant: "C" }));
   assert.match(stage.innerHTML, /data-context-path/);
-  assert.match(stage.innerHTML, /Policy context/);
+  assert.match(stage.innerHTML, /Policy-side data/);
+  assert.match(stage.innerHTML, /Native execution preserved/);
 });
 
 test("manual variant and before state never mutate authored time", () => {

@@ -59,6 +59,8 @@ class StaticSiteTests(unittest.TestCase):
 
         self.assertEqual(2, html.count('class="hero__tile-role hero__tile-role--base"'))
         self.assertEqual(2, html.count('class="hero__tile-role hero__tile-role--asrr"'))
+        self.assertEqual(2, html.count('data-hero-start-time="8"'))
+        self.assertEqual(2, html.count('data-hero-end-time="38"'))
 
     def test_explainer_sources_remain_anonymous_and_tracking_free(self):
         source = "\n".join(
@@ -72,6 +74,9 @@ class StaticSiteTests(unittest.TestCase):
         )
 
         css = (DOCS / "static/css/explainer.css").read_text(encoding="utf-8")
+        self.assertIn('[data-explainer-root][data-theme="light"]', css)
+        self.assertIn(".scene { height: auto; min-width: 0;", css)
+        self.assertIn(".chapter-tabs { overflow: visible; grid-template-columns: repeat(2, minmax(0, 1fr)); }", css)
         page_rules = re.findall(r"(?:html|body|\.explainer-app)\s*\{[^}]*\}", css, re.DOTALL)
         for rule in page_rules:
             fixed_minimums = [int(value) for value in re.findall(r"min-width:\s*(\d+)px", rule)]
@@ -235,6 +240,7 @@ class StaticSiteTests(unittest.TestCase):
         self.assertNotIn("SmolVLA", html)
         self.assertEqual(6, html.count('data-playback-rate="3"'))
         self.assertEqual(6, html.count('<span class="speed-badge">3×</span>'))
+        self.assertEqual(10, html.count('controls muted playsinline preload="none"'))
 
     def test_public_code_scope_matches_final_paper(self):
         expected = ["act", "diffusion_policy", "pi05", "openvla_oft"]
@@ -242,6 +248,14 @@ class StaticSiteTests(unittest.TestCase):
             self.assertTrue((ROOT / "examples" / name).is_dir(), name)
         self.assertFalse((ROOT / "examples" / "octo").exists())
         self.assertFalse((ROOT / "examples" / "smolvla").exists())
+
+    def test_project_page_readme_describes_the_current_tour(self):
+        readme = (DOCS / "README.md").read_text(encoding="utf-8")
+        self.assertIn("120-second, four-chapter", readme)
+        self.assertIn("embedded directly below the homepage hero", readme)
+        self.assertIn("pi0.5 / LIBERO-10", readme)
+        self.assertIn("Piper / Corn-to-plate", readme)
+        self.assertNotIn("90-second", readme)
 
 
 if __name__ == "__main__":

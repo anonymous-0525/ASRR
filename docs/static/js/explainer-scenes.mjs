@@ -195,10 +195,11 @@ function residualScene(state) {
   const movingRefined = state.arm.base.map((value, coordinate) =>
     value + active.residual[coordinate] * scale);
   const refinedPoint = projectedPoint(state.before ? state.arm.base : movingRefined);
-  const context = state.variant === "C" ? `<div class="policy-data" data-context-path>
-    <span>Policy-side data</span><strong>state + mode + generation features</strong>
-  </div><div class="context-link" data-context-path aria-hidden="true">&#8600;</div>` : "";
-  return sceneFrame(state, `<div class="residual-mode-row">
+  const context = state.variant === "C" ? `<div class="context-path" data-context-path>
+    <div class="policy-data"><span>Policy-side data</span><strong>state + mode + generation features</strong></div>
+    <span class="context-link" aria-hidden="true">&#8594;</span>
+  </div>` : "";
+  return sceneFrame(state, `<div class="residual-mode-row residual-mode-row--${state.variant}">
     <div class="mode-pill is-active"><strong>ASRR-${state.variant}</strong><span>${state.variant === "A" ? "action proposal only" : "proposal + policy-side data"}</span></div>
     ${context}
     <div class="refiner-node"><span>Compact refiner</span><strong>&Delta;A</strong></div>

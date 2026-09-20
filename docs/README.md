@@ -14,11 +14,11 @@ https://anonymous-0525.github.io/ASRR/
 
 ## Files
 
-- `index.html`: project page content.
-- `explainer.html`: 90-second interactive ASRR workbench.
+- `index.html`: project page content with the live explainer embedded directly below the homepage hero.
+- `explainer.html`: standalone 120-second, four-chapter ASRR workbench.
 - `static/css/site.css`: page styling.
 - `static/css/explainer.css`: explainer themes and responsive layout.
-- `static/js/site.js`: real-robot playback-rate handling.
+- `static/js/site.js`: moving hero media, visibility-aware playback, and homepage explainer mounting.
 - `static/js/explainer*.js`: tour state, rendering, playback, and evidence media.
 - `static/data/explainer-evidence.json`: traceable measured values and media identities.
 - `static/images/`: compressed figures used by the page.
@@ -34,6 +34,9 @@ https://anonymous-0525.github.io/ASRR/
 - Real-robot clips are shown at 3x playback speed in the browser. The web copies
   use H.264 for browser compatibility; the source recordings are retained
   separately from this repository.
+- The authored tour spends 30 seconds on each of four chapters: Local Error,
+  Editable Interface, Residual Refinement, and Recorded Evidence. The final
+  chapter presents pi0.5 / LIBERO-10 followed by Piper / Corn-to-plate.
 - When refreshing figures or the paper PDF, run the standard-library tests from
   the repository root:
 
@@ -49,7 +52,9 @@ From the repository root:
 python -m http.server 8765 --directory docs
 ```
 
-Open `http://localhost:8765/explainer.html`, then run both validation suites:
+Open `http://localhost:8765/` for the embedded workbench or
+`http://localhost:8765/explainer.html` for the full-screen version, then run
+both validation suites:
 
 ```bash
 node --test tests/explainer-*.test.mjs

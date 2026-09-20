@@ -94,6 +94,7 @@ test("residual scene overlays both arms and exposes policy data only for ASRR-C"
   const inspector = new FakeElement();
 
   renderScene(stage, inspector, deriveTourState(70_000, { variant: "A" }));
+  assert.match(stage.innerHTML, /residual-mode-row--A/);
   assert.match(stage.innerHTML, /data-arm="base-ghost"/);
   assert.match(stage.innerHTML, /data-arm="refined"/);
   assert.match(stage.innerHTML, /residual-curve/);
@@ -101,6 +102,8 @@ test("residual scene overlays both arms and exposes policy data only for ASRR-C"
   assert.doesNotMatch(stage.innerHTML, /Policy-side data/);
 
   renderScene(stage, inspector, deriveTourState(70_000, { variant: "C" }));
+  assert.match(stage.innerHTML, /residual-mode-row--C/);
+  assert.match(stage.innerHTML, /class="context-path"/);
   assert.match(stage.innerHTML, /data-context-path/);
   assert.match(stage.innerHTML, /Policy-side data/);
   assert.match(stage.innerHTML, /Native execution preserved/);

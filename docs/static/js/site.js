@@ -20,10 +20,18 @@ const hero = document.querySelector(".hero");
 const heroVideos = [...document.querySelectorAll(".hero__tile-video")];
 let heroVisible = false;
 
+function keepHeroVideoInSegment(video) {
+  const start = Number(video.dataset.heroStartTime ?? 0);
+  const end = Number(video.dataset.heroEndTime ?? video.duration);
+  if (video.readyState < 1 || !Number.isFinite(start) || !Number.isFinite(end)) return;
+  if (video.currentTime < start || video.currentTime >= end) video.currentTime = start;
+}
+
 function syncHeroVideos() {
   const shouldPlay = heroVisible && !document.hidden && !reducedMotion.matches;
   for (const video of heroVideos) {
     applyPlaybackRate(video, "heroPlaybackRate");
+    keepHeroVideoInSegment(video);
     if (shouldPlay) {
       video.play().catch(() => {});
     } else {
@@ -36,6 +44,7 @@ function syncHeroVideos() {
 for (const video of heroVideos) {
   video.addEventListener("loadedmetadata", syncHeroVideos);
   video.addEventListener("play", () => applyPlaybackRate(video, "heroPlaybackRate"));
+  video.addEventListener("timeupdate", () => keepHeroVideoInSegment(video));
 }
 
 if (hero && "IntersectionObserver" in window) {

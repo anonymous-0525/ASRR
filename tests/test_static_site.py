@@ -73,7 +73,10 @@ class StaticSiteTests(unittest.TestCase):
             "variant-toggle", "before-after", "media-dialog", "media-retry",
         }
         self.assertTrue(required_ids.issubset(parser.ids), required_ids - parser.ids)
-        self.assertEqual(5, html.count('data-chapter-index="'))
+        self.assertIn('data-explainer-root="standalone"', html)
+        self.assertEqual(4, html.count('data-chapter-index="'))
+        self.assertNotIn("<iframe", html)
+        self.assertIn("two-minute interactive explanation", html)
         self.assertIn('href="static/css/explainer.css"', html)
         self.assertIn('type="module" src="static/js/explainer.js"', html)
 

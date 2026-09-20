@@ -241,8 +241,8 @@ function formatTime(milliseconds) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-function browserVideoFactory({ role, src, poster }) {
-  const video = document.createElement("video");
+function browserVideoFactory(documentRef, { role, src, poster }) {
+  const video = documentRef.createElement("video");
   video.controls = true;
   video.muted = true;
   video.playsInline = true;
@@ -269,40 +269,75 @@ export function bindBeforeAfterRelease(documentRef, controller) {
   const release = () => {
     if (controller.getState()?.scene.before) controller.setBefore(false);
   };
+  const releaseKey = (event) => {
+    if (new Set(["Space", "Enter"]).has(event.code)) release();
+  };
   documentRef.addEventListener("pointerup", release);
   documentRef.addEventListener("pointercancel", release);
-  documentRef.addEventListener("keyup", (event) => {
-    if (new Set(["Space", "Enter"]).has(event.code)) release();
-  });
+  documentRef.addEventListener("keyup", releaseKey);
+  return () => {
+    documentRef.removeEventListener?.("pointerup", release);
+    documentRef.removeEventListener?.("pointercancel", release);
+    documentRef.removeEventListener?.("keyup", releaseKey);
+  };
 }
 
-async function initializeBrowserExplainer() {
+export async function mountExplainer(root, {
+  mode = "standalone",
+  autoplayWhenVisible = false,
+  fetchImpl,
+} = {}) {
+  if (!root || typeof root.querySelector !== "function") {
+    throw new TypeError("mountExplainer requires a root element.");
+  }
+  if (!new Set(["standalone", "embedded"]).has(mode)) {
+    throw new RangeError("Explainer mode must be standalone or embedded.");
+  }
+  root.dataset.explainerMode = mode;
+  const documentRef = root.ownerDocument ?? document;
+  const windowRef = documentRef.defaultView ?? window;
+  const query = (id) => root.querySelector(`#${id}`);
   const elements = {
-    tabs: document.getElementById("chapter-tabs"),
-    stage: document.getElementById("stage"),
-    inspector: document.getElementById("inspector"),
-    play: document.getElementById("play-toggle"),
-    previous: document.getElementById("previous-chapter"),
-    next: document.getElementById("next-chapter"),
-    replay: document.getElementById("replay-chapter"),
-    timeline: document.getElementById("tour-timeline"),
-    elapsed: document.getElementById("elapsed-time"),
-    theme: document.getElementById("theme-toggle"),
-    dialog: document.getElementById("media-dialog"),
-    mediaPair: document.getElementById("media-pair"),
-    mediaStatus: document.getElementById("media-status"),
-    retry: document.getElementById("media-retry"),
-    live: document.getElementById("tour-status"),
-    heading: document.getElementById("stage-heading"),
+    tabs: query("chapter-tabs"),
+    stage: query("stage"),
+    inspector: query("inspector"),
+    play: query("play-toggle"),
+    previous: query("previous-chapter"),
+    next: query("next-chapter"),
+    replay: query("replay-chapter"),
+    timeline: query("tour-timeline"),
+    elapsed: query("elapsed-time"),
+    theme: query("theme-toggle"),
+    dialog: query("media-dialog"),
+    mediaPair: query("media-pair"),
+    mediaStatus: query("media-status"),
+    retry: query("media-retry"),
+    live: query("tour-status"),
+    heading: query("stage-heading"),
   };
 
-  const response = await fetch("static/data/explainer-evidence.json");
+  const missing = Object.entries(elements).filter(([, element]) => !element).map(([name]) => name);
+  if (missing.length) throw new Error(`Explainer root is missing: ${missing.join(", ")}.`);
+
+  const fetcher = fetchImpl ?? windowRef.fetch.bind(windowRef);
+  const response = await fetcher("static/data/explainer-evidence.json");
   if (!response.ok) throw new Error(`Evidence manifest failed with ${response.status}.`);
   const evidence = await response.json();
   const evidenceById = new Map(evidence.cases.map((item) => [item.id, item]));
-  const authoredMedia = createMediaController({ createVideo: browserVideoFactory, now: () => performance.now() });
-  const modalMedia = createMediaController({ createVideo: browserVideoFactory, now: () => performance.now() });
-  const clock = createRafClock();
+  const createVideo = (options) => browserVideoFactory(documentRef, options);
+  const authoredMedia = createMediaController({ createVideo, now: () => windowRef.performance.now() });
+  const modalMedia = createMediaController({ createVideo, now: () => windowRef.performance.now() });
+  const clock = createRafClock({
+    now: () => windowRef.performance.now(),
+    requestFrame: (callback) => windowRef.requestAnimationFrame(callback),
+    cancelFrame: (handle) => windowRef.cancelAnimationFrame(handle),
+  });
+  const cleanups = [];
+  let userPaused = false;
+  const listen = (target, type, listener, options) => {
+    target.addEventListener(type, listener, options);
+    cleanups.push(() => target.removeEventListener(type, listener, options));
+  };
   let renderedEvidenceCase = null;
   let authoredCaseId = null;
 
@@ -347,8 +382,9 @@ async function initializeBrowserExplainer() {
     elements.next.disabled = scene.chapterIndex === CHAPTERS.length - 1;
     elements.heading.textContent = scene.chapter.label;
     elements.live.textContent = describeState(scene);
-    document.documentElement.dataset.theme = controllerState.theme;
-    document.documentElement.dataset.stage = scene.chapter.id;
+    const themeTarget = mode === "standalone" ? documentRef.documentElement : root;
+    themeTarget.dataset.theme = controllerState.theme;
+    root.dataset.stage = scene.chapter.id;
     elements.theme.innerHTML = controllerState.theme === "dark" ? '<span aria-hidden="true">&#9788;</span>' : '<span aria-hidden="true">&#9790;</span>';
     elements.theme.setAttribute("aria-label", controllerState.theme === "dark" ? "Switch to light theme" : "Switch to dark theme");
   }
@@ -357,54 +393,62 @@ async function initializeBrowserExplainer() {
     model: { deriveTourState },
     renderer: updateChrome,
     media: authoredMedia,
-    storage: window.localStorage,
+    storage: windowRef.localStorage,
     clock,
   });
-  bindBeforeAfterRelease(document, controller);
+  cleanups.push(bindBeforeAfterRelease(documentRef, controller));
 
   for (const control of [elements.play, elements.replay, elements.timeline, elements.theme]) control.disabled = false;
 
-  elements.play.addEventListener("click", () => controller.getState().playing ? controller.pause() : controller.play());
-  elements.previous.addEventListener("click", controller.previousChapter);
-  elements.next.addEventListener("click", controller.nextChapter);
-  elements.replay.addEventListener("click", controller.replayChapter);
-  elements.timeline.addEventListener("input", (event) => controller.seek(Number(event.target.value)));
-  elements.theme.addEventListener("click", () => controller.setTheme(controller.getState().theme === "dark" ? "light" : "dark"));
-  elements.tabs.addEventListener("click", (event) => {
+  listen(elements.play, "click", () => {
+    if (controller.getState().playing) {
+      userPaused = true;
+      controller.pause();
+    } else {
+      userPaused = false;
+      controller.play();
+    }
+  });
+  listen(elements.previous, "click", controller.previousChapter);
+  listen(elements.next, "click", controller.nextChapter);
+  listen(elements.replay, "click", controller.replayChapter);
+  listen(elements.timeline, "input", (event) => controller.seek(Number(event.target.value)));
+  listen(elements.theme, "click", () => controller.setTheme(controller.getState().theme === "dark" ? "light" : "dark"));
+  listen(elements.tabs, "click", (event) => {
     const button = event.target.closest("[data-chapter-index]");
     if (!button) return;
     controller.seek(CHAPTERS[Number(button.dataset.chapterIndex)].startMs);
   });
-  elements.stage.addEventListener("click", (event) => {
+  listen(elements.stage, "click", (event) => {
     const action = event.target.closest("[data-step]");
     if (action) controller.selectStep(Number(action.dataset.step));
   });
-  elements.stage.addEventListener("keydown", (event) => {
+  listen(elements.stage, "keydown", (event) => {
     const action = event.target.closest?.("[data-step]");
     if (!action || !new Set(["ArrowLeft", "ArrowRight"]).has(event.key)) return;
     event.preventDefault();
     const offset = event.key === "ArrowRight" ? 1 : -1;
     controller.selectStep(clamp(Number(action.dataset.step) + offset, 0, 7));
   });
-  elements.inspector.addEventListener("click", (event) => {
+  listen(elements.inspector, "click", (event) => {
     const variant = event.target.closest("[data-variant]");
     if (variant) controller.setVariant(variant.dataset.variant);
   });
-  elements.inspector.addEventListener("pointerdown", (event) => {
+  listen(elements.inspector, "pointerdown", (event) => {
     if (event.target.closest("#before-after")) controller.setBefore(true);
   });
   for (const eventName of ["pointerup", "pointercancel", "pointerleave"]) {
-    elements.inspector.addEventListener(eventName, (event) => {
+    listen(elements.inspector, eventName, (event) => {
       if (event.target.closest?.("#before-after") || controller.getState().scene.before) controller.setBefore(false);
     });
   }
-  elements.inspector.addEventListener("keydown", (event) => {
+  listen(elements.inspector, "keydown", (event) => {
     if (!event.target.closest?.("#before-after") || !new Set(["Space", "Enter"]).has(event.code)) return;
     event.preventDefault();
     event.stopPropagation();
     controller.setBefore(true);
   });
-  elements.inspector.addEventListener("keyup", (event) => {
+  listen(elements.inspector, "keyup", (event) => {
     if (!event.target.closest?.("#before-after") || !new Set(["Space", "Enter"]).has(event.code)) return;
     event.preventDefault();
     event.stopPropagation();
@@ -435,10 +479,10 @@ async function initializeBrowserExplainer() {
     controller.pause();
     modalMedia.pause();
     elements.mediaPair.replaceChildren();
-    const library = document.createElement("div");
+    const library = documentRef.createElement("div");
     library.className = "evidence-library";
     for (const caseData of evidence.cases.filter((item) => !item.authored)) {
-      const button = document.createElement("button");
+      const button = documentRef.createElement("button");
       button.type = "button";
       button.dataset.evidenceCase = caseData.id;
       button.innerHTML = `<strong>${caseData.policy}</strong><span>${caseData.task}</span>`;
@@ -450,7 +494,7 @@ async function initializeBrowserExplainer() {
     if (!elements.dialog.open) elements.dialog.showModal();
   }
 
-  document.addEventListener("click", (event) => {
+  listen(root, "click", (event) => {
     if (event.target.closest?.("[data-open-evidence-library]")) {
       openEvidenceLibrary();
       return;
@@ -459,8 +503,8 @@ async function initializeBrowserExplainer() {
     if (evidenceCase) openEvidence(evidenceCase.dataset.evidenceCase);
     if (event.target.closest?.("[data-dialog-close]")) elements.dialog.close();
   });
-  elements.dialog.addEventListener("close", () => modalMedia.pause());
-  elements.retry.addEventListener("click", async () => {
+  listen(elements.dialog, "close", () => modalMedia.pause());
+  listen(elements.retry, "click", async () => {
     elements.retry.hidden = true;
     elements.mediaStatus.textContent = "Retrying recorded media...";
     const retryPromise = modalMedia.retry();
@@ -469,18 +513,41 @@ async function initializeBrowserExplainer() {
     elements.retry.hidden = result.status !== "error";
     elements.mediaStatus.textContent = result.status === "ready" ? result.caseData.note : "Recorded media is still unavailable.";
   });
-  document.addEventListener("visibilitychange", () => controller.onVisibilityChange(document.hidden));
-  document.addEventListener("keydown", (event) => controller.handleKey(event));
-  window.addEventListener("pagehide", () => {
+  listen(documentRef, "visibilitychange", () => controller.onVisibilityChange(documentRef.hidden));
+  listen(documentRef, "keydown", (event) => controller.handleKey(event));
+
+  let observer = null;
+  if (autoplayWhenVisible && typeof windowRef.IntersectionObserver === "function") {
+    observer = new windowRef.IntersectionObserver((entries) => {
+      const entry = entries.find((item) => item.target === root);
+      if (!entry) return;
+      if (entry.intersectionRatio >= 0.55 && !userPaused && !controller.getState().playing) {
+        controller.play();
+      } else if (entry.intersectionRatio < 0.2 && controller.getState().playing) {
+        controller.pause();
+      }
+    }, { threshold: [0, 0.2, 0.55, 1] });
+    observer.observe(root);
+  }
+
+  function destroy() {
+    observer?.disconnect();
+    for (const cleanup of cleanups.splice(0)) cleanup();
     controller.dispose();
     authoredMedia.dispose();
     modalMedia.dispose();
-  }, { once: true });
+  }
+
+  listen(windowRef, "pagehide", destroy, { once: true });
+  return { controller, destroy };
 }
 
 if (typeof document !== "undefined") {
-  initializeBrowserExplainer().catch((error) => {
-    const status = document.getElementById("tour-status");
-    if (status) status.textContent = `Explainer could not initialize: ${error.message}`;
-  });
+  const root = document.querySelector('[data-explainer-root="standalone"][data-explainer-auto]');
+  if (root) {
+    mountExplainer(root, { mode: "standalone" }).catch((error) => {
+      const status = root.querySelector("#tour-status");
+      if (status) status.textContent = `Explainer could not initialize: ${error.message}`;
+    });
+  }
 }

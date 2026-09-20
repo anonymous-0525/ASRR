@@ -4,11 +4,12 @@ import assert from "node:assert/strict";
 import { deriveTourState } from "../docs/static/js/explainer-model.mjs";
 import * as scenes from "../docs/static/js/explainer-scenes.mjs";
 const { describeState, renderChapterTabs, renderScene } = scenes;
-import {
+import * as explainerModule from "../docs/static/js/explainer.js";
+const {
   bindBeforeAfterRelease,
   createTourController,
   mountMediaPair,
-} from "../docs/static/js/explainer.js";
+} = explainerModule;
 
 class FakeElement {
   constructor() {
@@ -113,6 +114,17 @@ test("manual variant and before state never mutate authored time", () => {
   const restored = deriveTourState(manual.timeMs);
   assert.equal(restored.variant, authored.variant);
   assert.equal(restored.before, authored.before);
+});
+
+test("separate explainer controllers keep independent clocks and scene state", () => {
+  const first = makeController();
+  const second = makeController();
+
+  first.controller.seek(72_000);
+
+  assert.equal(first.controller.getState().timeMs, 72_000);
+  assert.equal(second.controller.getState().timeMs, 0);
+  assert.equal(typeof explainerModule.mountExplainer, "function");
 });
 
 test("chapter tabs and descriptions follow derived state", () => {

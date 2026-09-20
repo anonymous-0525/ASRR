@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A 90-second interactive explanation of Action Sequence Residual Refinement.">
+  <meta name="description" content="A two-minute interactive explanation of Action Sequence Residual Refinement.">
   <meta name="author" content="Anonymous ICRA 2027 Submission">
   <title>Explore ASRR</title>
   <link rel="stylesheet" href="static/css/explainer.css">
 </head>
-<body>
+<body data-explainer-root="standalone" data-explainer-auto>
   <div class="explainer-app">
     <header class="app-header">
       <a class="back-link" href="index.html" aria-label="Return to the ASRR project page">
@@ -26,10 +26,9 @@
 
     <nav id="chapter-tabs" class="chapter-tabs" aria-label="Explainer chapters">
       <button type="button" data-chapter-index="0" aria-current="step" disabled><span>01</span>Local Error</button>
-      <button type="button" data-chapter-index="1" disabled><span>02</span>Editable Proposal</button>
+      <button type="button" data-chapter-index="1" disabled><span>02</span>Editable Interface</button>
       <button type="button" data-chapter-index="2" disabled><span>03</span>Residual Refinement</button>
-      <button type="button" data-chapter-index="3" disabled><span>04</span>Native Execution</button>
-      <button type="button" data-chapter-index="4" disabled><span>05</span>Evidence</button>
+      <button type="button" data-chapter-index="3" disabled><span>04</span>Recorded Evidence</button>
     </nav>
 
     <main class="workbench">
@@ -59,7 +58,7 @@
       <aside id="inspector" class="inspector" aria-label="Current ASRR operation">
         <div class="inspector__header">
           <p class="overline">Current operation</p>
-          <span class="chapter-index">01 / 05</span>
+          <span class="chapter-index">01 / 04</span>
         </div>
         <h2>Locate the execution error</h2>
         <p class="inspector__takeaway">Most of the predicted sequence is already useful. The highlighted timestep introduces a local deviation near task completion.</p>
@@ -99,10 +98,10 @@
       </div>
       <label class="timeline-wrap" for="tour-timeline">
         <span class="sr-only">Tour timeline</span>
-        <input id="tour-timeline" type="range" min="0" max="90000" value="0" step="100" disabled>
-        <span class="timeline-chapters" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <input id="tour-timeline" type="range" min="0" max="120000" value="0" step="100" disabled>
+        <span class="timeline-chapters" aria-hidden="true"><i></i><i></i><i></i></span>
       </label>
-      <output id="elapsed-time" class="elapsed-time" for="tour-timeline">00:00 / 01:30</output>
+      <output id="elapsed-time" class="elapsed-time" for="tour-timeline">00:00 / 02:00</output>
     </footer>
   </div>
 

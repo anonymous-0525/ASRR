@@ -15,7 +15,8 @@ https://anonymous-0525.github.io/ASRR/
 ## Files
 
 - `index.html`: project page content with the live explainer embedded directly below the homepage hero.
-- `explainer.html`: standalone 120-second, four-chapter ASRR workbench.
+- `explainer.html`: standalone 105-second, four-chapter ASRR workbench.
+- `static/images/explainer/arm/`: original Blender-rendered parts animated in 2D; regenerate with `blender --background --python tools/render_explainer_arm.py` from the repository root.
 - `static/css/site.css`: page styling.
 - `static/css/explainer.css`: explainer themes and responsive layout.
 - `static/js/site.js`: moving hero media, visibility-aware playback, and homepage explainer mounting.
@@ -34,9 +35,9 @@ https://anonymous-0525.github.io/ASRR/
 - Real-robot clips are shown at 3x playback speed in the browser. The web copies
   use H.264 for browser compatibility; the source recordings are retained
   separately from this repository.
-- The authored tour spends 30 seconds on each of four chapters: Local Error,
-  Editable Interface, Residual Refinement, and Recorded Evidence. The final
-  chapter presents pi0.5 / LIBERO-10 followed by Piper / Corn-to-plate.
+- The first three chapters last 25 seconds each: Local Error, Editable Interface,
+  and Residual Refinement. Recorded Evidence retains 30 seconds, presenting
+  pi0.5 / LIBERO-10 followed by Piper / Corn-to-plate.
 - When refreshing figures or the paper PDF, run the standard-library tests from
   the repository root:
 

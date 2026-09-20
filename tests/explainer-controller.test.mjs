@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { deriveTourState } from "../docs/static/js/explainer-model.mjs";
+import { CHAPTERS, TOUR_DURATION_MS, deriveTourState } from "../docs/static/js/explainer-model.mjs";
 import * as scenes from "../docs/static/js/explainer-scenes.mjs";
 const { describeState, renderChapterTabs, renderScene } = scenes;
 import * as explainerModule from "../docs/static/js/explainer.js";
@@ -62,6 +62,9 @@ test("local error renders every labelled action and begins the active sequence a
 
   assert.equal(state.selectedActionId, "a3");
   assert.match(stage.innerHTML, /data-arm="active"/);
+  assert.match(stage.innerHTML, /data-path="ideal"/);
+  assert.match(stage.innerHTML, /Local error at a5/);
+  assert.match(stage.innerHTML, /missed target/);
   assert.equal((stage.innerHTML.match(/data-action-label=/g) ?? []).length, 8);
   assert.equal((stage.innerHTML.match(/is-visited/g) ?? []).length, state.visitedThrough + 1);
   assert.equal((stage.innerHTML.match(/is-current/g) ?? []).length, 1);
@@ -72,10 +75,22 @@ test("local error renders every labelled action and begins the active sequence a
 test("arm geometry reaches the requested wrist with stable joints", () => {
   assert.equal(typeof scenes.armGeometry, "function");
   const geometry = scenes.armGeometry([340, 250]);
-  assert.deepEqual(geometry.base, [155, 386]);
+  assert.deepEqual(geometry.base, [345, 405]);
   assert.deepEqual(geometry.wrist, [340, 250]);
   assert.equal(geometry.elbow.length, 2);
   assert.ok(geometry.elbow.every(Number.isFinite));
+  for (let t = 0; t < 75_000; t += 250) {
+    const state = deriveTourState(t);
+    for (const position of Object.values(state.arm)) {
+      const target = [70 + position[0] * 760, 54 + position[1] * 350];
+      const arm = scenes.armGeometry(target);
+      const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+      assert.ok(Math.abs(distance(arm.base, arm.elbow) - 340) < 1e-6);
+      assert.ok(Math.abs(distance(arm.elbow, arm.wrist) - 220) < 1e-6);
+      assert.ok(arm.elbow[0] > 35 && arm.elbow[0] < 865);
+      assert.ok(arm.elbow[1] > 35 && arm.elbow[1] < 455);
+    }
+  }
 });
 
 test("editable interface contrasts policy updates with proposal editing", () => {
@@ -87,6 +102,8 @@ test("editable interface contrasts policy updates with proposal editing", () => 
   assert.match(stage.innerHTML, /Adapt the policy/);
   assert.match(stage.innerHTML, /Edit the proposal/);
   assert.match(stage.innerHTML, /Editable action proposal/);
+  assert.equal((stage.innerHTML.match(/data-action-label=/g) ?? []).length, 16);
+  assert.match(stage.innerHTML, /trajectory--refined/);
   assert.doesNotMatch(stage.innerHTML, /token-strip/);
 });
 
@@ -101,6 +118,7 @@ test("residual scene overlays both arms and exposes policy data only for ASRR-C"
   assert.match(stage.innerHTML, /residual-curve/);
   assert.doesNotMatch(stage.innerHTML, /data-context-path/);
   assert.doesNotMatch(stage.innerHTML, /Policy-side data/);
+  assert.doesNotMatch(stage.innerHTML, /data-policy-state-at/);
 
   renderScene(stage, inspector, deriveTourState(70_000, { variant: "C" }));
   assert.match(stage.innerHTML, /residual-mode-row--C/);
@@ -108,6 +126,8 @@ test("residual scene overlays both arms and exposes policy data only for ASRR-C"
   assert.match(stage.innerHTML, /data-context-path/);
   assert.match(stage.innerHTML, /Policy-side data/);
   assert.match(stage.innerHTML, /Native execution preserved/);
+  assert.match(stage.innerHTML, /data-policy-state-at="a5"/);
+  assert.match(stage.innerHTML, /Policy state used at a5/);
 });
 
 test("manual variant and before state never mutate authored time", () => {
@@ -164,7 +184,7 @@ test("play, pause, seek, and end state follow the shared clock", () => {
   controller.seek(12_000);
   assert.equal(controller.getState().timeMs, 12_000);
   controller.seek(129_000);
-  assert.equal(controller.getState().timeMs, 120_000);
+  assert.equal(controller.getState().timeMs, TOUR_DURATION_MS);
   assert.equal(controller.getState().playing, false);
   assert.equal(controller.getState().atEnd, true);
 });
@@ -172,12 +192,12 @@ test("play, pause, seek, and end state follow the shared clock", () => {
 test("chapter navigation and replay use authored boundaries", () => {
   const { controller } = makeController(70_000);
   controller.nextChapter();
-  assert.equal(controller.getState().timeMs, 90_000);
+  assert.equal(controller.getState().timeMs, CHAPTERS[3].startMs);
   controller.previousChapter();
-  assert.equal(controller.getState().timeMs, 60_000);
-  controller.seek(78_000);
+  assert.equal(controller.getState().timeMs, CHAPTERS[2].startMs);
+  controller.seek(68_000);
   controller.replayChapter();
-  assert.equal(controller.getState().timeMs, 60_000);
+  assert.equal(controller.getState().timeMs, CHAPTERS[2].startMs);
 });
 
 test("manual inspection pauses and play restores authored state", () => {

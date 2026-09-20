@@ -41,7 +41,7 @@ class StaticSiteTests(unittest.TestCase):
         self.assertLess(hero_position, explainer_position)
         self.assertLess(explainer_position, abstract_position)
         self.assertNotIn('class="explainer-preview"', html)
-        self.assertIn("two-minute guided explanation", html)
+        self.assertIn("1 minute 45 seconds", html)
         self.assertIn('href="explainer.html"', html)
 
     def test_homepage_hero_uses_four_local_looping_video_tiles(self):
@@ -97,7 +97,7 @@ class StaticSiteTests(unittest.TestCase):
         self.assertIn('data-explainer-root="standalone"', html)
         self.assertEqual(4, html.count('data-chapter-index="'))
         self.assertNotIn("<iframe", html)
-        self.assertIn("two-minute interactive explanation", html)
+        self.assertIn("105-second interactive explanation", html)
         self.assertIn('href="static/css/explainer.css"', html)
         self.assertIn('type="module" src="static/js/explainer.js"', html)
 
@@ -251,7 +251,7 @@ class StaticSiteTests(unittest.TestCase):
 
     def test_project_page_readme_describes_the_current_tour(self):
         readme = (DOCS / "README.md").read_text(encoding="utf-8")
-        self.assertIn("120-second, four-chapter", readme)
+        self.assertIn("105-second, four-chapter", readme)
         self.assertIn("embedded directly below the homepage hero", readme)
         self.assertIn("pi0.5 / LIBERO-10", readme)
         self.assertIn("Piper / Corn-to-plate", readme)

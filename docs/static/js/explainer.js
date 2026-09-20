@@ -318,6 +318,10 @@ export async function mountExplainer(root, {
 
   const missing = Object.entries(elements).filter(([, element]) => !element).map(([name]) => name);
   if (missing.length) throw new Error(`Explainer root is missing: ${missing.join(", ")}.`);
+  elements.timeline.max = String(TOUR_DURATION_MS);
+  root.querySelectorAll(".timeline-chapters i").forEach((marker, index) => {
+    marker.style.left = `${100 * CHAPTERS[index + 1].startMs / TOUR_DURATION_MS}%`;
+  });
 
   const fetcher = fetchImpl ?? windowRef.fetch.bind(windowRef);
   const response = await fetcher("static/data/explainer-evidence.json");
@@ -371,7 +375,7 @@ export async function mountExplainer(root, {
     }
     renderChapterTabs(elements.tabs, scene);
     elements.timeline.value = String(scene.timeMs);
-    elements.elapsed.textContent = `${formatTime(scene.timeMs)} / 02:00`;
+    elements.elapsed.textContent = `${formatTime(scene.timeMs)} / ${formatTime(TOUR_DURATION_MS)}`;
     elements.play.innerHTML = controllerState.atEnd
       ? '<span aria-hidden="true">&#8634;</span><span>Replay</span>'
       : controllerState.playing

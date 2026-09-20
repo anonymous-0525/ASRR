@@ -22,18 +22,18 @@ test("bounded masked residual edits only declared coordinates", () => {
   assert.deepEqual(refined, [0.4, -0.1, 0.6]);
 });
 
-test("the redesigned tour has four equal 30-second chapters", () => {
-  assert.equal(TOUR_DURATION_MS, 120_000);
+test("the tour speeds up the first three chapters and preserves 30 seconds of evidence", () => {
+  assert.equal(TOUR_DURATION_MS, 105_000);
   assert.deepEqual(CHAPTERS.map(({ startMs, endMs }) => [startMs, endMs]), [
-    [0, 30_000],
-    [30_000, 60_000],
-    [60_000, 90_000],
-    [90_000, 120_000],
+    [0, 25_000],
+    [25_000, 50_000],
+    [50_000, 75_000],
+    [75_000, 105_000],
   ]);
-  assert.equal(chapterAtTime(30_000).id, "editable-interface");
-  assert.equal(chapterAtTime(60_000).id, "residual-refinement");
-  assert.equal(chapterAtTime(90_000).id, "recorded-evidence");
-  assert.equal(chapterAtTime(120_000).id, "recorded-evidence");
+  assert.equal(chapterAtTime(25_000).id, "editable-interface");
+  assert.equal(chapterAtTime(50_000).id, "residual-refinement");
+  assert.equal(chapterAtTime(75_000).id, "recorded-evidence");
+  assert.equal(chapterAtTime(105_000).id, "recorded-evidence");
 });
 
 test("tour boundaries always resolve to a valid chapter", () => {
@@ -50,10 +50,10 @@ test("tour boundaries always resolve to a valid chapter", () => {
 
 test("local error begins at a3 and walks through a7 without skipping", () => {
   assert.equal(deriveTourState(0).selectedActionId, "a3");
-  assert.equal(deriveTourState(29_999).selectedActionId, "a7");
+  assert.equal(deriveTourState(24_999).selectedActionId, "a7");
 
   for (let index = 3; index < 8; index += 1) {
-    const state = deriveTourState((index - 3) * 6_000 + 1);
+    const state = deriveTourState((index - 3) * 5_000 + 1);
     assert.equal(state.selectedStep, index);
     assert.equal(state.visitedThrough, index - 1);
   }
@@ -69,13 +69,30 @@ test("the robot arm interpolates continuously between authored actions", () => {
 });
 
 test("recorded evidence schedules one simulation and one real pair", () => {
-  const simulation = deriveTourState(90_001);
-  const robot = deriveTourState(105_001);
+  const simulation = deriveTourState(75_001);
+  const robot = deriveTourState(90_001);
 
   assert.equal(simulation.evidenceCaseId, "pi05-libero10");
   assert.equal(simulation.evidenceLocalTimeMs, 1);
   assert.equal(robot.evidenceCaseId, "corn");
   assert.equal(robot.evidenceLocalTimeMs, 1);
+  assert.equal(deriveTourState(TOUR_DURATION_MS).evidenceLocalTimeMs, 15_000);
+});
+
+test("local error starts at a5 and the final Base action misses the ideal target", () => {
+  const { actions } = deriveTourState(24_000);
+  for (const action of actions.slice(0, 5)) assert.deepEqual(action.base, action.ideal);
+  assert.ok(actions[5].base[1] - actions[5].ideal[1] > 0.25);
+  assert.ok(actions[7].base[1] - actions[7].ideal[1] > 0.2);
+  for (const action of actions) {
+    assert.ok(action.refined.every((value, coordinate) => Math.abs(value - action.ideal[coordinate]) < 1e-12));
+  }
+});
+
+test("manual action inspection puts both robot wrists on the selected action", () => {
+  const state = deriveTourState(67_000, { selectedStep: 5 });
+  assert.deepEqual(state.arm.base, state.actions[5].base);
+  assert.deepEqual(state.arm.refined, state.actions[5].refined);
 });
 
 test("arbitrary seeks preserve stable action identities", () => {

@@ -1,32 +1,28 @@
-export const TOUR_DURATION_MS = 120_000;
+export const TOUR_DURATION_MS = 105_000;
 
 export const CHAPTERS = Object.freeze([
-  { index: 0, id: "local-error", label: "Local Error", startMs: 0, endMs: 30_000 },
-  { index: 1, id: "editable-interface", label: "Editable Interface", startMs: 30_000, endMs: 60_000 },
-  { index: 2, id: "residual-refinement", label: "Residual Refinement", startMs: 60_000, endMs: 90_000 },
-  { index: 3, id: "recorded-evidence", label: "Recorded Evidence", startMs: 90_000, endMs: 120_000 },
+  { index: 0, id: "local-error", label: "Local Error", startMs: 0, endMs: 25_000 },
+  { index: 1, id: "editable-interface", label: "Editable Interface", startMs: 25_000, endMs: 50_000 },
+  { index: 2, id: "residual-refinement", label: "Residual Refinement", startMs: 50_000, endMs: 75_000 },
+  { index: 3, id: "recorded-evidence", label: "Recorded Evidence", startMs: 75_000, endMs: 105_000 },
 ]);
 
 const BASE_POINTS = [
   [0.08, 0.78],
-  [0.19, 0.69],
-  [0.31, 0.59],
-  [0.43, 0.49],
-  [0.55, 0.4],
-  [0.68, 0.38],
-  [0.8, 0.24],
-  [0.91, 0.17],
+  [0.19, 0.67],
+  [0.31, 0.54],
+  [0.43, 0.42],
+  [0.55, 0.33],
+  [0.65, 0.53],
+  [0.79, 0.43],
+  [0.91, 0.38],
 ];
 
-const RESIDUALS = [
-  [0.0, 0.0],
-  [0.0, 0.0],
-  [0.005, -0.004],
-  [0.008, -0.012],
-  [0.014, -0.026],
-  [0.022, -0.075],
-  [0.012, -0.045],
-  [0.004, -0.012],
+const IDEAL_POINTS = [
+  ...BASE_POINTS.slice(0, 5),
+  [0.65, 0.22],
+  [0.79, 0.15],
+  [0.91, 0.13],
 ];
 
 const STEP_CONTEXT = [0.12, 0.17, 0.24, 0.36, 0.58, 0.91, 0.54, 0.2];
@@ -41,9 +37,10 @@ export const TEACHING_SEQUENCE = Object.freeze(
       id: `a${index}`,
       index,
       base: freezePoint(base),
-      residual: freezePoint(RESIDUALS[index]),
+      ideal: freezePoint(IDEAL_POINTS[index]),
+      residual: freezePoint(IDEAL_POINTS[index].map((value, coordinate) => value - base[coordinate])),
       mask: freezePoint([1, 1]),
-      bound: freezePoint([0.08, 0.08]),
+      bound: freezePoint([0.35, 0.35]),
       context: STEP_CONTEXT[index],
       localError: index === 5,
     }),
@@ -82,26 +79,6 @@ export function chapterAtTime(timeMs) {
   ) ?? CHAPTERS[0];
 }
 
-function sequenceStep(progress) {
-  return Math.min(7, Math.floor(clamp(progress, 0, 0.999999) * 8));
-}
-
-function localErrorStep(progress) {
-  return 3 + Math.min(4, Math.floor(clamp(progress, 0, 0.999999) * 5));
-}
-
-function authoredStep(chapterIndex, chapterProgress) {
-  if (chapterIndex === 0) return localErrorStep(chapterProgress);
-  if (chapterIndex === 1) return sequenceStep(chapterProgress);
-  if (chapterIndex === 2) {
-    const modeProgress = chapterProgress < 0.5
-      ? chapterProgress * 2
-      : (chapterProgress - 0.5) * 2;
-    return sequenceStep(modeProgress);
-  }
-  return 5;
-}
-
 function authoredVariant(chapterIndex, chapterProgress) {
   return chapterIndex === 2 && chapterProgress < 0.5 ? "A" : "C";
 }
@@ -113,8 +90,7 @@ function sequenceProgress(chapterIndex, chapterProgress) {
     : (chapterProgress - 0.5) * 2;
 }
 
-function interpolateAction(actions, progress, key) {
-  const position = clamp(progress * actions.length, 0, actions.length - 1);
+function interpolateAction(actions, position, key) {
   const fromIndex = Math.floor(position);
   const toIndex = Math.min(actions.length - 1, fromIndex + 1);
   const blend = position - fromIndex;
@@ -132,10 +108,15 @@ export function deriveTourState(timeMs, overrides = {}) {
   const variant = overrides.variant === "A" || overrides.variant === "C"
     ? overrides.variant
     : authoredVariant(chapter.index, chapterProgress);
+  const firstStep = chapter.index === 0 ? 3 : 0;
+  const motionProgress = clamp(sequenceProgress(chapter.index, chapterProgress) / 0.8, 0, 1);
+  const actionPosition = Number.isInteger(overrides.selectedStep)
+    ? clamp(overrides.selectedStep, 0, TEACHING_SEQUENCE.length - 1)
+    : firstStep + motionProgress * (TEACHING_SEQUENCE.length - 1 - firstStep);
   const selectedStep = Number.isInteger(overrides.selectedStep)
     ? clamp(overrides.selectedStep, 0, TEACHING_SEQUENCE.length - 1)
-    : authoredStep(chapter.index, chapterProgress);
-  const visitedThrough = chapter.index === 0 ? selectedStep - 1 : selectedStep;
+    : chapter.index === 3 ? 5 : Math.floor(actionPosition);
+  const visitedThrough = selectedStep - 1;
   const before = typeof overrides.before === "boolean" ? overrides.before : false;
   const alpha = 1;
 
@@ -147,15 +128,12 @@ export function deriveTourState(timeMs, overrides = {}) {
       ? [...action.base]
       : composeResidual(action.base, action.residual, alpha, action.mask, action.bound),
   }));
-  const motionProgress = chapter.index === 0
-    ? (3 + chapterProgress * 4) / actions.length
-    : sequenceProgress(chapter.index, chapterProgress);
   const evidenceOffsetMs = Math.max(0, clampedTime - CHAPTERS[3].startMs);
   const evidenceCaseId = chapter.index === 3 && evidenceOffsetMs >= 15_000
     ? "corn"
     : "pi05-libero10";
   const evidenceLocalTimeMs = chapter.index === 3
-    ? evidenceOffsetMs % 15_000
+    ? Math.min(15_000, evidenceOffsetMs - (evidenceCaseId === "corn" ? 15_000 : 0))
     : 0;
 
   return {
@@ -166,16 +144,17 @@ export function deriveTourState(timeMs, overrides = {}) {
     chapterProgress,
     variant,
     selectedStep,
+    actionPosition,
     visitedThrough,
     selectedActionId: actions[selectedStep].id,
     before,
     alpha,
     predictionHorizon: actions.length,
-    refinementHorizon: 6,
+    refinementHorizon: actions.length,
     actions,
     arm: {
-      base: interpolateAction(actions, motionProgress, "base"),
-      refined: interpolateAction(actions, motionProgress, "refined"),
+      base: interpolateAction(actions, actionPosition, "base"),
+      refined: interpolateAction(actions, actionPosition, "refined"),
     },
     evidenceCaseId,
     evidenceLocalTimeMs,

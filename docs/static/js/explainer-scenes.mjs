@@ -3,7 +3,7 @@ import { CHAPTERS } from "./explainer-model.mjs";
 const CHAPTER_COPY = [
   {
     title: "A useful proposal can still contain a local error",
-    takeaway: "The arm follows a broadly useful action proposal until one local deviation disrupts execution.",
+    takeaway: "A local deviation at a5 sends the yellow Base proposal away from the blue ideal path, leaving a7 outside the target.",
     input: "Frozen policy proposal A_base",
     change: "Enter at a3 and follow the proposal through a7",
     evidence: "Illustrative action-space projection",
@@ -44,14 +44,6 @@ function projectedPoint(values) {
   return [70 + values[0] * 760, 54 + values[1] * 350];
 }
 
-function illustrativeRefined(action) {
-  const scale = action.localError ? 3.6 : 2.45;
-  return [
-    action.base[0] + action.residual[0] * scale,
-    action.base[1] + action.residual[1] * scale,
-  ];
-}
-
 function trajectoryPath(actions, accessor) {
   return actions.map((action, index) => {
     const [x, y] = projectedPoint(accessor(action));
@@ -60,9 +52,9 @@ function trajectoryPath(actions, accessor) {
 }
 
 export function armGeometry([x, y], {
-  origin = [155, 386],
-  upper = 335,
-  lower = 335,
+  origin = [345, 405],
+  upper = 340,
+  lower = 220,
 } = {}) {
   const dx = x - origin[0];
   const dy = y - origin[1];
@@ -88,28 +80,55 @@ export function armGeometry([x, y], {
 
 function robotArm(target, role, className = "") {
   const arm = armGeometry(target);
+  const asset = "static/images/explainer/arm";
+  const link = (start, end, name) => {
+    const length = Math.hypot(end[0] - start[0], end[1] - start[1]);
+    const angle = Math.atan2(end[1] - start[1], end[0] - start[0]) * 180 / Math.PI;
+    return `<g transform="translate(${start[0]} ${start[1]}) rotate(${angle})">
+      <image href="${asset}/${name}.png" x="${-length / 6}" y="${-length / 7.2}" width="${length * 4 / 3}" height="${length / 3.6}"></image>
+    </g>`;
+  };
+  const joint = (center, size) => `<image href="${asset}/joint.png" x="${center[0] - size / 2}" y="${center[1] - size / 2}" width="${size}" height="${size}"></image>`;
   return `<g class="robot-arm ${className}" data-arm="${role}">
-    <line class="robot-link robot-link--upper" x1="${arm.base[0]}" y1="${arm.base[1]}" x2="${arm.elbow[0].toFixed(1)}" y2="${arm.elbow[1].toFixed(1)}"></line>
-    <line class="robot-link robot-link--lower" x1="${arm.elbow[0].toFixed(1)}" y1="${arm.elbow[1].toFixed(1)}" x2="${arm.wrist[0]}" y2="${arm.wrist[1]}"></line>
-    <circle class="robot-base" cx="${arm.base[0]}" cy="${arm.base[1]}" r="18"></circle>
-    <circle class="robot-joint" cx="${arm.elbow[0].toFixed(1)}" cy="${arm.elbow[1].toFixed(1)}" r="11"></circle>
-    <circle class="robot-wrist" cx="${arm.wrist[0]}" cy="${arm.wrist[1]}" r="9"></circle>
-    <line class="robot-gripper" x1="${arm.wrist[0]}" y1="${arm.wrist[1]}" x2="${arm.gripper[0][0].toFixed(1)}" y2="${arm.gripper[0][1].toFixed(1)}"></line>
-    <line class="robot-gripper" x1="${arm.wrist[0]}" y1="${arm.wrist[1]}" x2="${arm.gripper[1][0].toFixed(1)}" y2="${arm.gripper[1][1].toFixed(1)}"></line>
+    <image href="${asset}/base.png" x="${arm.base[0] - 51.2}" y="${arm.base[1] - 32}" width="102.4" height="96"></image>
+    ${link(arm.base, arm.elbow, "upper")}
+    ${link(arm.elbow, arm.wrist, "forearm")}
+    ${joint(arm.base, 66)}
+    ${joint(arm.elbow, 55)}
+    <image href="${asset}/gripper.png" x="${arm.wrist[0] - 24.7}" y="${arm.wrist[1] - 10.4}" width="49.4" height="46.8"></image>
+    ${joint(arm.wrist, 28)}
+    <circle class="robot-servo-accent" cx="${arm.elbow[0]}" cy="${arm.elbow[1]}" r="11"></circle>
+    <circle class="robot-tool-center" cx="${arm.wrist[0]}" cy="${arm.wrist[1]}" r="5"></circle>
   </g>`;
 }
 
-function actionHistoryPoints(state) {
+function actionHistoryPoints(state, key = "base") {
   return state.actions.map((action) => {
-    const [x, y] = point(action, "base");
+    const [x, y] = point(action, key);
     const status = action.index === state.selectedStep
       ? "is-current"
       : action.index <= state.visitedThrough ? "is-visited" : "is-future";
-    return `<g class="action-point ${status}" data-trajectory-id="${action.id}" data-action-label="${action.id}" data-step="${action.index}" tabindex="0" role="button" aria-label="Select action ${action.id}">
+    return `<g class="action-point ${key === "refined" ? "action-point--refined" : ""} ${status}" data-trajectory-id="${action.id}" data-action-label="${action.id}" data-step="${action.index}" tabindex="0" role="button" aria-label="Select action ${action.id}">
       <circle class="point--history" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${status === "is-current" ? 11 : 7}"></circle>
-      <text x="${(x + 11).toFixed(1)}" y="${(y - 13).toFixed(1)}">${action.id}</text>
+      <text x="${(x + 10).toFixed(1)}" y="${(y + (action.index >= 5 && key === "base" ? 24 : -15)).toFixed(1)}">${action.id}</text>
     </g>`;
   }).join("");
+}
+
+function targetRegion(state, refined = false) {
+  const [x, y] = point(state.actions[7], "ideal");
+  return `<g class="target-marker ${refined ? "target-marker--refined" : ""}">
+    <rect class="target-zone" x="${x - 26}" y="${y - 23}" width="52" height="46" rx="5"></rect>
+    <path class="target-cross" d="M${x - 7} ${y}h14M${x} ${y - 7}v14"></path>
+    <text class="svg-label" text-anchor="middle" x="${x}" y="${y - 35}">target region</text>
+  </g>`;
+}
+
+function trajectoryLegend(refined = false) {
+  return `<div class="trajectory-legend" aria-label="Trajectory colors">
+    <span class="legend-base">Base proposal</span>
+    <span class="${refined ? "legend-refined" : "legend-ideal"}">${refined ? "ASRR refined" : "Ideal path"}</span>
+  </div>`;
 }
 
 function sceneFrame(state, content, label = "Illustrative") {
@@ -120,37 +139,44 @@ function sceneFrame(state, content, label = "Illustrative") {
 }
 
 function localErrorScene(state) {
-  const active = state.actions[state.selectedStep];
   const activePoint = projectedPoint(state.arm.base);
   const errorPoint = point(state.actions.find((action) => action.localError), "base");
   const errorReached = state.selectedStep >= 5;
-  return sceneFrame(state, `<div class="diagram-wrap local-error-stage">
-    <svg class="trajectory-svg" viewBox="0 0 900 455" role="img" aria-label="Robot arm following eight labelled actions toward one local error">
-      <path class="diagram-grid" d="M70 390H840M70 310H840M70 230H840M70 150H840M170 70V420M330 70V420M490 70V420M650 70V420M810 70V420"></path>
-      <rect class="target-zone" x="774" y="72" width="72" height="70" rx="8"></rect>
-      <text class="svg-label" x="780" y="62">target region</text>
+  const [endX, endY] = point(state.actions[7]);
+  return sceneFrame(state, `${trajectoryLegend()}<div class="diagram-wrap local-error-stage">
+    <svg class="trajectory-svg" viewBox="0 0 900 500" role="img" aria-label="Yellow Base proposal deviates at a5 from the blue ideal path and misses the target at a7">
+      <path class="diagram-grid" d="M90 460H840M90 355H840M90 250H840M90 145H840"></path>
+      ${robotArm(activePoint, "active", "robot-arm--active")}
+      ${targetRegion(state)}
+      <path class="trajectory trajectory--ideal" data-path="ideal" d="${trajectoryPath(state.actions, (action) => action.ideal)}"></path>
       <path class="trajectory trajectory--history" d="${trajectoryPath(state.actions, (action) => action.base)}"></path>
       ${actionHistoryPoints(state)}
-      ${robotArm(activePoint, "active", "robot-arm--active")}
       <circle class="error-pulse ${errorReached ? "is-visible" : ""}" cx="${errorPoint[0].toFixed(1)}" cy="${errorPoint[1].toFixed(1)}" r="25"></circle>
-      <path class="error-callout ${errorReached ? "is-visible" : ""}" d="M${(errorPoint[0] + 18).toFixed(1)} ${(errorPoint[1] - 18).toFixed(1)} Q${(errorPoint[0] + 62).toFixed(1)} ${(errorPoint[1] - 76).toFixed(1)} ${(errorPoint[0] + 128).toFixed(1)} ${(errorPoint[1] - 82).toFixed(1)}"></path>
-      <text class="svg-callout ${errorReached ? "is-visible" : ""}" x="${(errorPoint[0] + 134).toFixed(1)}" y="${(errorPoint[1] - 84).toFixed(1)}">local error</text>
+      <g class="local-error-annotation ${errorReached ? "is-reached" : ""}">
+        <path class="error-callout" d="M${errorPoint[0] + 20} ${errorPoint[1] + 18}Q610 292 644 295"></path>
+        <text class="svg-callout" x="650" y="301">Local error at a5</text>
+      </g>
+      <g class="miss-annotation ${state.selectedStep === 7 ? "is-reached" : ""}">
+        <path d="M${endX - 10} ${endY - 10}l20 20m0 -20l-20 20"></path>
+        <text x="${endX + 27}" y="${endY + 6}">missed target</text>
+      </g>
     </svg>
   </div>
   <button class="recorded-evidence-chip" type="button" data-evidence-case="pi05-libero10">Open a recorded failure <span aria-hidden="true">&#8599;</span></button>`);
 }
 
 function laneArm(state, key, role, className) {
-  const action = state.actions[state.selectedStep];
-  const scale = action.localError ? 3.6 : 2.45;
-  const values = key === "refined"
-    ? state.arm.base.map((value, coordinate) => value + action.residual[coordinate] * scale)
-    : state.arm.base;
-  const [x, y] = projectedPoint(values);
-  return `<svg class="interface-arm" viewBox="0 0 900 455" aria-hidden="true">
-    <path class="interface-ground" d="M75 400H845"></path>
+  const refined = key === "refined";
+  const [x, y] = projectedPoint(state.arm[key]);
+  return `<svg class="interface-arm" viewBox="0 0 900 500" role="img" aria-label="${refined ? "ASRR corrects the Base proposal into a trajectory reaching the target" : "Base action trajectory with a local deviation"}">
+    <path class="interface-ground" d="M220 460H510"></path>
     ${robotArm([x, y], role, className)}
-    <circle class="interface-action ${key === "refined" ? "interface-action--refined" : ""}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12"></circle>
+    ${targetRegion(state, refined)}
+    ${refined ? "" : `<path class="trajectory trajectory--ideal" d="${trajectoryPath(state.actions, (action) => action.ideal)}"></path>`}
+    <path class="trajectory trajectory--history ${refined ? "trajectory--ghost" : ""}" d="${trajectoryPath(state.actions, (action) => action.base)}"></path>
+    ${refined ? `<path class="trajectory trajectory--refined" d="${trajectoryPath(state.actions, (action) => action.refined)}"></path>` : ""}
+    ${actionHistoryPoints(state, key)}
+    <circle class="interface-action ${refined ? "interface-action--refined" : ""}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="10"></circle>
   </svg>`;
 }
 
@@ -163,7 +189,7 @@ function editableInterfaceScene(state) {
         <div class="mini-block mini-block--policy">Policy parameters<small>additional optimization</small></div><span>&#8594;</span>
         <div class="mini-block">Robot action</div>
       </div>
-      ${laneArm(state, "base", "policy-output", "robot-arm--base")}
+      <div class="lane-trajectory">${trajectoryLegend()}${laneArm(state, "base", "policy-output", "robot-arm--base")}</div>
     </section>
     <section class="adaptation-lane adaptation-lane--asrr">
       <div class="lane-heading"><span>ASRR</span><strong>Edit the proposal</strong></div>
@@ -172,13 +198,14 @@ function editableInterfaceScene(state) {
         <div class="mini-block mini-block--proposal">Editable action proposal</div><span>&#8594;</span>
         <div class="mini-block mini-block--refiner">Residual refiner</div>
       </div>
-      ${laneArm(state, "refined", "editable-output", "robot-arm--refined")}
+      <div class="lane-trajectory">${trajectoryLegend(true)}${laneArm(state, "refined", "editable-output", "robot-arm--refined")}</div>
     </section>
   </div>`, "Adaptation target");
 }
 
 function residualCurves(state, refinedValues) {
-  return state.actions.slice(0, state.refinementHorizon).map((action, index) => {
+  return state.actions.slice(0, state.refinementHorizon).flatMap((action, index) => {
+    if (action.residual.every((value) => value === 0)) return [];
     const [bx, by] = projectedPoint(action.base);
     const [rx, ry] = projectedPoint(refinedValues[index]);
     const cx = (bx + rx) / 2 + 11;
@@ -188,15 +215,11 @@ function residualCurves(state, refinedValues) {
 }
 
 function residualScene(state) {
-  const refinedValues = state.actions.map(illustrativeRefined);
-  const active = state.actions[state.selectedStep];
+  const refinedValues = state.actions.map((action) => action.refined);
   const basePoint = projectedPoint(state.arm.base);
-  const scale = active.localError ? 3.6 : 2.45;
-  const movingRefined = state.arm.base.map((value, coordinate) =>
-    value + active.residual[coordinate] * scale);
-  const refinedPoint = projectedPoint(state.before ? state.arm.base : movingRefined);
+  const refinedPoint = projectedPoint(state.arm.refined);
   const context = state.variant === "C" ? `<div class="context-path" data-context-path>
-    <div class="policy-data"><span>Policy-side data</span><strong>state + mode + generation features</strong></div>
+    <div class="policy-data"><span>Policy-side data</span><strong>state + policy features</strong></div>
     <span class="context-link" aria-hidden="true">&#8594;</span>
   </div>` : "";
   return sceneFrame(state, `<div class="residual-mode-row residual-mode-row--${state.variant}">
@@ -205,17 +228,26 @@ function residualScene(state) {
     <div class="refiner-node"><span>Compact refiner</span><strong>&Delta;A</strong></div>
     <div class="method-status"><span>Base policy frozen</span><span>Native execution preserved</span></div>
   </div>
+  ${trajectoryLegend(true)}
   <div class="refinement-diagram arm-comparison">
-    <svg class="trajectory-svg" viewBox="0 0 900 455" role="img" aria-label="Ghost Base arm and opaque Refined arm with curved residual corrections">
-      <defs><marker id="residual-head" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><polygon points="0 0, 9 4.5, 0 9"></polygon></marker></defs>
-      <path class="diagram-grid" d="M70 390H840M70 310H840M70 230H840M70 150H840M170 70V420M330 70V420M490 70V420M650 70V420M810 70V420"></path>
-      <path class="trajectory trajectory--history trajectory--ghost" d="${trajectoryPath(state.actions, (action) => action.base)}"></path>
-      <path class="trajectory trajectory--refined" d="${trajectoryPath(state.actions, (action) => state.before ? action.base : illustrativeRefined(action))}"></path>
-      ${state.before ? "" : residualCurves(state, refinedValues)}
+    <svg class="trajectory-svg" viewBox="0 0 900 500" role="img" aria-label="Ghost Base arm and Refined arm follow labelled trajectories; policy state guides the a5 residual in ASRR-C">
+      <defs><marker id="residual-head" markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16" refX="14" refY="8" orient="auto"><polygon points="0 0, 16 8, 0 16"></polygon></marker></defs>
+      <path class="diagram-grid" d="M90 460H840M90 355H840M90 250H840M90 145H840"></path>
       ${robotArm(basePoint, "base-ghost", "robot-arm--ghost")}
       ${robotArm(refinedPoint, "refined", "robot-arm--refined")}
-      <text class="arm-label arm-label--base" x="95" y="80">Base arm</text>
-      <text class="arm-label arm-label--refined" x="95" y="105">Refined arm</text>
+      ${targetRegion(state, true)}
+      <path class="trajectory trajectory--history trajectory--ghost" d="${trajectoryPath(state.actions, (action) => action.base)}"></path>
+      <path class="trajectory trajectory--refined" d="${trajectoryPath(state.actions, (action) => action.refined)}"></path>
+      ${state.before ? "" : residualCurves(state, refinedValues)}
+      ${actionHistoryPoints(state)}
+      <circle class="moving-refined-point" cx="${refinedPoint[0]}" cy="${refinedPoint[1]}" r="8"></circle>
+      ${state.variant === "C" && !state.before ? `<g class="policy-state-annotation" data-policy-state-at="a5">
+        <path class="policy-state-leader" d="M486 74C530 90 525 153 569.5 176.3"></path>
+        <circle cx="569.5" cy="176.3" r="4"></circle>
+        <rect x="164" y="12" width="338" height="68" rx="5"></rect>
+        <text x="180" y="39">Policy state used at a5</text>
+        <text class="policy-state-detail" x="180" y="62">conditions this residual correction</text>
+      </g>` : ""}
     </svg>
     <div class="illustration-note">Illustrative action-space view. Residual displacement enlarged for clarity.</div>
   </div>`, "Method animation");

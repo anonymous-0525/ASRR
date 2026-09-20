@@ -77,8 +77,8 @@ function sceneFrame(state, content, label = "Illustrative") {
 }
 
 function localErrorScene(state) {
-  const selected = state.actions[state.selectedStep];
-  const [x, y] = point(selected, "base");
+  const errorAction = state.actions.find((action) => action.localError);
+  const [x, y] = point(errorAction, "base");
   return sceneFrame(state, `<div class="diagram-wrap">
     <svg class="trajectory-svg" viewBox="0 0 900 455" role="img" aria-label="Illustrative action proposal with a local deviation">
       <path class="diagram-grid" d="M70 390H840M70 310H840M70 230H840M70 150H840M170 70V420M330 70V420M490 70V420M650 70V420M810 70V420"></path>
@@ -130,7 +130,7 @@ function residualScene(state) {
   </div>
   <div class="refinement-diagram">
     <svg class="trajectory-svg" viewBox="0 0 900 455" role="img" aria-label="Base proposal, residual vectors, and refined proposal">
-      <defs><marker id="arrowhead" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7"></polygon></marker></defs>
+      <defs><marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="5" markerUnits="userSpaceOnUse" orient="auto"><polygon points="0 0, 10 5, 0 10"></polygon></marker></defs>
       <path class="diagram-grid" d="M70 390H840M70 310H840M70 230H840M70 150H840M170 70V420M330 70V420M490 70V420M650 70V420M810 70V420"></path>
       <path class="trajectory trajectory--base" d="${trajectoryPath(state.actions, "base")}"></path>
       <path class="trajectory trajectory--refined" d="${trajectoryPath(state.actions, "refined")}"></path>

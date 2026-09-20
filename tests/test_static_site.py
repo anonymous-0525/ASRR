@@ -32,6 +32,35 @@ def parse_page(path):
 
 
 class StaticSiteTests(unittest.TestCase):
+    def test_homepage_links_one_compact_explainer_between_abstract_and_method(self):
+        html = (DOCS / "index.html").read_text(encoding="utf-8")
+        abstract_position = html.index('id="abstract"')
+        preview_position = html.index('id="interactive-explainer"')
+        method_position = html.index('id="method"')
+
+        self.assertLess(abstract_position, preview_position)
+        self.assertLess(preview_position, method_position)
+        self.assertEqual(1, html.count("Explore ASRR"))
+        self.assertIn("90-second interactive tour", html)
+        self.assertIn('href="explainer.html"', html)
+
+    def test_explainer_sources_remain_anonymous_and_tracking_free(self):
+        source = "\n".join(
+            (DOCS / name).read_text(encoding="utf-8")
+            for name in ("index.html", "explainer.html")
+        )
+        self.assertNotRegex(source, r"NEBULIS|Google Analytics|gtag\(|plausible\.io")
+        self.assertNotRegex(
+            source,
+            "clz" + "JY|Cheng" + "long|Fei" + "yang|Shuai" + "jun",
+        )
+
+        css = (DOCS / "static/css/explainer.css").read_text(encoding="utf-8")
+        page_rules = re.findall(r"(?:html|body|\.explainer-app)\s*\{[^}]*\}", css, re.DOTALL)
+        for rule in page_rules:
+            fixed_minimums = [int(value) for value in re.findall(r"min-width:\s*(\d+)px", rule)]
+            self.assertTrue(all(value <= 390 for value in fixed_minimums), rule)
+
     def test_explainer_shell_has_required_controls_and_local_resources(self):
         html_path = DOCS / "explainer.html"
         html = html_path.read_text(encoding="utf-8")

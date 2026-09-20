@@ -105,6 +105,32 @@
       </div>
     </section>
 
+    <section class="explainer-preview" id="interactive-explainer" aria-labelledby="explainer-preview-title">
+      <div class="container explainer-preview__inner">
+        <div class="explainer-preview__copy">
+          <p class="eyebrow">Interactive explainer</p>
+          <h2 id="explainer-preview-title">Follow one proposal through ASRR</h2>
+          <p>Inspect the local error, residual edit, native execution rule, and recorded evidence in a 90-second interactive tour.</p>
+          <a class="button button--ink" href="explainer.html"><span>Explore ASRR</span><span aria-hidden="true">&#8594;</span></a>
+          <span class="explainer-preview__duration">About 90 seconds</span>
+        </div>
+        <div class="explainer-preview__visual" aria-label="Miniature Base and ASRR action trajectories">
+          <svg viewBox="0 0 560 230" role="img" aria-labelledby="preview-visual-title preview-visual-desc">
+            <title id="preview-visual-title">Action proposal refinement</title>
+            <desc id="preview-visual-desc">A coral residual moves one action from the blue Base proposal toward the teal refined trajectory.</desc>
+            <path class="preview-grid" d="M35 190H530M35 130H530M35 70H530M120 25V205M245 25V205M370 25V205M495 25V205"></path>
+            <path class="preview-base" d="M45 180 C150 150 235 105 320 105 S430 130 515 42"></path>
+            <path class="preview-refined" d="M45 180 C150 150 235 105 320 105 S430 77 515 42"></path>
+            <path class="preview-residual" d="M405 116 L420 76"></path>
+            <circle class="preview-base-point" cx="405" cy="116" r="8"></circle>
+            <circle class="preview-asrr-point" cx="420" cy="76" r="8"></circle>
+            <text x="45" y="215">Base proposal</text>
+            <text class="preview-asrr-label" x="428" y="69">ASRR edit</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
     <section class="section section--light" id="method">
       <div class="container">
         <div class="section-heading">

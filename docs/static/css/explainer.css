@@ -61,8 +61,10 @@ a { color: inherit; }
 
 .explainer-app {
   display: grid;
+  height: 100dvh;
   min-height: 100dvh;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
+  overflow: hidden;
 }
 
 .app-header {
@@ -115,6 +117,7 @@ a { color: inherit; }
   grid-template-columns: minmax(0, 1fr) minmax(280px, 330px);
   gap: 14px;
   padding: 14px;
+  overflow: hidden;
 }
 .stage-panel, .inspector {
   min-width: 0;
@@ -142,8 +145,8 @@ a { color: inherit; }
 
 .scene { display: flex; min-width: 620px; min-height: 100%; flex-direction: column; padding: 14px 18px 16px; }
 .scene-meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 0.67rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
-.diagram-wrap, .refinement-diagram { position: relative; flex: 1; min-height: 280px; }
-.trajectory-svg { display: block; width: 100%; height: 100%; min-height: 280px; }
+.diagram-wrap, .refinement-diagram { position: relative; flex: 1; min-height: 220px; }
+.trajectory-svg { display: block; width: 100%; height: 100%; min-height: 220px; }
 .diagram-grid { fill: none; stroke: var(--line); stroke-width: 1; }
 .target-zone { fill: color-mix(in srgb, var(--asrr) 9%, transparent); stroke: var(--asrr); stroke-dasharray: 7 5; stroke-width: 2; }
 .trajectory { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 7; }
@@ -185,7 +188,7 @@ a { color: inherit; }
 .flow-block--residual { border-color: var(--residual); }
 .context-block { min-height: 58px; border-color: var(--context); }
 .flow-arrow--context { color: var(--context); font-size: 1rem; line-height: 1; }
-.refinement-diagram { display: grid; min-height: 300px; grid-template-rows: minmax(230px, 1fr) auto; }
+.refinement-diagram { display: grid; min-height: 0; grid-template-rows: minmax(165px, 1fr) auto; }
 .residual-arrow { fill: none; stroke: var(--residual); stroke-width: 3; }
 .residual-arrow.is-selected { stroke-width: 6; }
 .residual-arrow + polygon, #arrowhead polygon { fill: var(--residual); }
@@ -209,7 +212,7 @@ a { color: inherit; }
 .metric-ribbon span { display: block; color: var(--muted); font-size: 0.61rem; }
 .evidence-wall { display: grid; flex: 1; min-height: 0; gap: 10px; }
 .evidence-wall.is-opening { grid-template-columns: minmax(0, 720px); place-content: center; }
-.evidence-wall.is-expanded { grid-template-columns: repeat(5, minmax(120px, 1fr)); align-items: stretch; }
+.evidence-wall.is-expanded { grid-template-columns: repeat(5, minmax(120px, 1fr)); align-items: start; }
 .evidence-card { display: flex; min-width: 0; flex-direction: column; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); text-align: left; }
 .evidence-card:hover { border-color: var(--asrr); }
 .evidence-card__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 8px 9px; }
@@ -256,12 +259,15 @@ a { color: inherit; }
 .media-dialog::backdrop { background: rgb(2 7 13 / 0.78); }
 .dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
 .media-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 16px; }
+.media-pair figure { min-width: 0; margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-soft); }
+.media-pair video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #080d13; object-fit: contain; }
+.media-pair figcaption { padding: 8px 10px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.72rem; font-weight: 800; }
 .media-status { padding: 0 16px 16px; color: var(--muted); font-size: 0.84rem; }
 .retry-command { margin: 0 16px 16px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 @media (max-width: 820px) {
-  .explainer-app { min-height: 100dvh; grid-template-rows: auto auto auto auto; }
+  .explainer-app { height: auto; min-height: 100dvh; grid-template-rows: auto auto auto auto; overflow: visible; }
   .app-header { grid-template-columns: 1fr auto; }
   .app-title { grid-row: 2; grid-column: 1 / -1; justify-content: flex-start; }
   .chapter-tabs { overflow-x: auto; grid-template-columns: repeat(5, minmax(150px, 1fr)); }

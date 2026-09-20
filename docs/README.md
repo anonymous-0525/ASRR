@@ -15,8 +15,12 @@ https://anonymous-0525.github.io/ASRR/
 ## Files
 
 - `index.html`: project page content.
+- `explainer.html`: 90-second interactive ASRR workbench.
 - `static/css/site.css`: page styling.
+- `static/css/explainer.css`: explainer themes and responsive layout.
 - `static/js/site.js`: real-robot playback-rate handling.
+- `static/js/explainer*.js`: tour state, rendering, playback, and evidence media.
+- `static/data/explainer-evidence.json`: traceable measured values and media identities.
 - `static/images/`: compressed figures used by the page.
 - `static/files/asrr_paper.pdf`: anonymous paper PDF linked from the page.
 
@@ -35,4 +39,19 @@ https://anonymous-0525.github.io/ASRR/
 
 ```bash
 python -m unittest discover -s tests
+```
+
+## Local explainer preview
+
+From the repository root:
+
+```bash
+python -m http.server 8765 --directory docs
+```
+
+Open `http://localhost:8765/explainer.html`, then run both validation suites:
+
+```bash
+node --test tests/explainer-*.test.mjs
+python -m unittest discover -s tests -v
 ```

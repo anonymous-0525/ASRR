@@ -26,7 +26,7 @@ function deferred() {
   return { promise, resolve, reject };
 }
 
-function makeVideo(loadPromise = Promise.resolve()) {
+function makeVideo(loadPromise = Promise.resolve(), resetRateOnLoad = false) {
   return {
     currentTime: 0,
     playbackRate: 1,
@@ -36,7 +36,10 @@ function makeVideo(loadPromise = Promise.resolve()) {
     paused: true,
     playCalls: 0,
     pauseCalls: 0,
-    load() { return loadPromise; },
+    load() {
+      if (resetRateOnLoad) this.playbackRate = 1;
+      return loadPromise;
+    },
     play() { this.paused = false; this.playCalls += 1; return Promise.resolve(); },
     pause() { this.paused = true; this.pauseCalls += 1; },
     removeAttribute() {},
@@ -82,6 +85,22 @@ test("real robot media retains declared 3x playback", async () => {
   assert.ok(videos.every((video) => video.playbackRate === 3));
   assert.ok(videos.every((video) => video.currentTime === 4));
   assert.ok(videos.every((video) => video.playCalls === 1));
+});
+
+test("metadata loading cannot reset the declared playback rate", async () => {
+  const videos = [];
+  const media = createMediaController({
+    createVideo: () => {
+      const video = makeVideo(Promise.resolve(), true);
+      videos.push(video);
+      return video;
+    },
+    now: () => 0,
+  });
+
+  await media.loadCase(CASE_A, 1);
+
+  assert.ok(videos.every((video) => video.playbackRate === 3));
 });
 
 test("pause freezes both videos", async () => {

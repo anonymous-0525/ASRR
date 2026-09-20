@@ -253,6 +253,18 @@ function browserVideoFactory({ role, src, poster }) {
   return video;
 }
 
+export function mountMediaPair(container, videos, documentRef = document) {
+  container.replaceChildren();
+  for (const [label, video] of [["Base", videos[0]], ["ASRR", videos[1]]]) {
+    if (!video) continue;
+    const figure = documentRef.createElement("figure");
+    const caption = documentRef.createElement("figcaption");
+    caption.textContent = label;
+    figure.append(video, caption);
+    container.append(figure);
+  }
+}
+
 async function initializeBrowserExplainer() {
   const elements = {
     tabs: document.getElementById("chapter-tabs"),
@@ -367,14 +379,7 @@ async function initializeBrowserExplainer() {
     elements.retry.hidden = true;
     if (!elements.dialog.open) elements.dialog.showModal();
     const loadPromise = media.loadCase(caseData, media.getState().generation + 1);
-    const [baseVideo, asrrVideo] = media.getVideos();
-    for (const [label, video] of [["Base", baseVideo], ["ASRR", asrrVideo]]) {
-      const figure = document.createElement("figure");
-      const caption = document.createElement("figcaption");
-      caption.textContent = label;
-      figure.append(video, caption);
-      elements.mediaPair.append(figure);
-    }
+    mountMediaPair(elements.mediaPair, media.getVideos());
     const mediaState = await loadPromise;
     if (mediaState.status === "error") {
       elements.mediaStatus.textContent = "Recorded media is unavailable. The schematic tour remains active.";
@@ -394,7 +399,9 @@ async function initializeBrowserExplainer() {
   elements.retry.addEventListener("click", async () => {
     elements.retry.hidden = true;
     elements.mediaStatus.textContent = "Retrying recorded media...";
-    const result = await media.retry();
+    const retryPromise = media.retry();
+    mountMediaPair(elements.mediaPair, media.getVideos());
+    const result = await retryPromise;
     elements.retry.hidden = result.status !== "error";
     elements.mediaStatus.textContent = result.status === "ready" ? result.caseData.note : "Recorded media is still unavailable.";
   });

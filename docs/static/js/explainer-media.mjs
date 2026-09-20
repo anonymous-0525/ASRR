@@ -102,6 +102,7 @@ export function createMediaController({ createVideo, now = () => Date.now() }) {
     try {
       await Promise.all(videos.map(loadVideo));
       if (localGeneration !== generation) return getState();
+      for (const video of videos) video.playbackRate = caseData.playbackRate;
       status = "ready";
     } catch (loadError) {
       if (localGeneration !== generation) return getState();

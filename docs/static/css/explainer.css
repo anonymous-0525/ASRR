@@ -143,10 +143,11 @@ a { color: inherit; }
 .fallback-target { fill: none; stroke: var(--asrr); stroke-width: 5; }
 .stage-message { position: absolute; right: 20px; bottom: 16px; padding: 8px 10px; border-radius: 4px; background: var(--surface); color: var(--muted); font-size: 0.8rem; }
 
-.scene { display: flex; min-width: 620px; min-height: 100%; flex-direction: column; padding: 14px 18px 16px; }
+.scene { display: flex; min-width: 620px; height: 100%; min-height: 0; flex-direction: column; padding: 14px 18px 16px; overflow: hidden; }
 .scene-meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 0.67rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
-.diagram-wrap, .refinement-diagram { position: relative; flex: 1; min-height: 220px; }
-.trajectory-svg { display: block; width: 100%; height: 100%; min-height: 220px; }
+.diagram-wrap, .refinement-diagram { position: relative; flex: 1 1 0; height: 0; min-height: 0; }
+.trajectory-svg { display: block; width: 100%; height: 100%; min-height: 0; }
+.diagram-wrap > .trajectory-svg { position: absolute; inset: 0; }
 .diagram-grid { fill: none; stroke: var(--line); stroke-width: 1; }
 .target-zone { fill: color-mix(in srgb, var(--asrr) 9%, transparent); stroke: var(--asrr); stroke-dasharray: 7 5; stroke-width: 2; }
 .trajectory { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 7; }
@@ -188,7 +189,7 @@ a { color: inherit; }
 .flow-block--residual { border-color: var(--residual); }
 .context-block { min-height: 58px; border-color: var(--context); }
 .flow-arrow--context { color: var(--context); font-size: 1rem; line-height: 1; }
-.refinement-diagram { display: grid; min-height: 0; grid-template-rows: minmax(165px, 1fr) auto; }
+.refinement-diagram { display: grid; grid-template-rows: minmax(0, 1fr) auto; }
 .residual-arrow { fill: none; stroke: var(--residual); stroke-width: 3; }
 .residual-arrow.is-selected { stroke-width: 6; }
 .residual-arrow + polygon, #arrowhead polygon { fill: var(--residual); }
@@ -273,6 +274,10 @@ a { color: inherit; }
   .chapter-tabs { overflow-x: auto; grid-template-columns: repeat(5, minmax(150px, 1fr)); }
   .workbench { grid-template-columns: minmax(0, 1fr); }
   .stage-viewport { min-height: 390px; }
+  .scene { height: auto; min-height: 100%; overflow: visible; }
+  .diagram-wrap, .refinement-diagram { height: auto; min-height: 300px; }
+  .diagram-wrap > .trajectory-svg { position: static; min-height: 300px; }
+  .refinement-diagram { flex: none; grid-template-rows: minmax(260px, 1fr) auto; }
   .inspector { overflow: visible; }
   .segmented-control { margin-top: 0; }
   .playback { position: sticky; bottom: 0; z-index: 5; grid-template-columns: 1fr auto; }

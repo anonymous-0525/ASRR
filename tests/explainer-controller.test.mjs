@@ -7,7 +7,7 @@ import {
   renderChapterTabs,
   renderScene,
 } from "../docs/static/js/explainer-scenes.mjs";
-import { createTourController } from "../docs/static/js/explainer.js";
+import { createTourController, mountMediaPair } from "../docs/static/js/explainer.js";
 
 class FakeElement {
   constructor() {
@@ -185,4 +185,29 @@ test("an external clock adapter drives the same scene state", () => {
   assert.equal(controller.getState().scene.chapterIndex, 4);
   external.seek(18_000);
   assert.equal(controller.getState().scene.chapterIndex, 1);
+});
+
+test("retry remount replaces stale visible media nodes", () => {
+  const container = {
+    children: ["stale"],
+    replaceChildren() { this.children = []; },
+    append(child) { this.children.push(child); },
+  };
+  const documentRef = {
+    createElement(tagName) {
+      return {
+        tagName,
+        children: [],
+        textContent: "",
+        append(...children) { this.children.push(...children); },
+      };
+    },
+  };
+  const videos = [{ id: "new-base" }, { id: "new-asrr" }];
+
+  mountMediaPair(container, videos, documentRef);
+
+  assert.equal(container.children.length, 2);
+  assert.equal(container.children[0].children[0], videos[0]);
+  assert.equal(container.children[1].children[0], videos[1]);
 });

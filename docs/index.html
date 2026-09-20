@@ -44,7 +44,8 @@
     <div class="hero__body">
       <div class="hero__content">
         <p class="kicker">Anonymous ICRA 2027 Submission</p>
-        <h1>ASRR: Offline Action Sequence Residual Refinement for Robot Policy Adaptation</h1>
+        <h1>ASRR</h1>
+        <p class="hero__paper-title">Offline Action Sequence Residual Refinement for Robot Policy Adaptation</p>
         <p class="hero__summary">
           Treat the action proposal as an editable adaptation interface. ASRR keeps
           the robot policy frozen and learns a compact residual refiner from cached
@@ -60,22 +61,25 @@
           <a class="button button--ghost" href="#videos">
             <i class="fa-solid fa-play" aria-hidden="true"></i><span>Videos</span>
           </a>
+          <a class="button button--demo" href="explainer.html?autoplay=1">
+            <i class="fa-solid fa-circle-play" aria-hidden="true"></i><span>Interactive Demo</span>
+          </a>
         </div>
       </div>
       <div class="hero__mosaic" aria-label="ASRR simulation and real-robot examples">
-        <figure class="hero__tile">
+        <figure class="hero__tile hero__tile--simulation">
           <video class="hero__tile-video" muted loop playsinline preload="metadata" poster="static/images/hero_sim_primary.png" src="static/videos/vla_rescues/pi05_libero10_base.mp4"></video>
           <figcaption><span>&pi;<sub>0.5</sub> · LIBERO-10</span><strong class="hero__tile-role hero__tile-role--base">Base</strong></figcaption>
         </figure>
-        <figure class="hero__tile">
+        <figure class="hero__tile hero__tile--simulation">
           <video class="hero__tile-video" muted loop playsinline preload="metadata" poster="static/images/hero_rescue_refined_primary.png" src="static/videos/vla_rescues/pi05_libero10_asrr.mp4"></video>
           <figcaption><span>&pi;<sub>0.5</sub> · LIBERO-10</span><strong class="hero__tile-role hero__tile-role--asrr">ASRR</strong></figcaption>
         </figure>
-        <figure class="hero__tile">
+        <figure class="hero__tile hero__tile--robot">
           <video class="hero__tile-video" muted loop playsinline preload="metadata" poster="static/images/hero_real_corn.png" data-hero-playback-rate="3" data-hero-start-time="8" data-hero-end-time="38" src="static/videos/real_robot_tasks/corn_to_plate_base.mp4"></video>
           <figcaption><span>Corn to plate · 3&times;</span><strong class="hero__tile-role hero__tile-role--base">Base</strong></figcaption>
         </figure>
-        <figure class="hero__tile">
+        <figure class="hero__tile hero__tile--robot">
           <video class="hero__tile-video" muted loop playsinline preload="metadata" poster="static/images/hero_real_corn.png" data-hero-playback-rate="3" data-hero-start-time="8" data-hero-end-time="38" src="static/videos/real_robot_tasks/corn_to_plate_asrr.mp4"></video>
           <figcaption><span>Corn to plate · 3&times;</span><strong class="hero__tile-role hero__tile-role--asrr">ASRR</strong></figcaption>
         </figure>

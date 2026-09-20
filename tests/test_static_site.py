@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import re
 import unittest
+from urllib.parse import urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -166,7 +167,7 @@ class StaticSiteTests(unittest.TestCase):
                 if ref != "#" and ref[1:] not in parser.ids:
                     missing_anchors.append(ref)
                 continue
-            if not (DOCS / ref).exists():
+            if not (DOCS / urlsplit(ref).path).exists():
                 missing_files.append(ref)
 
         self.assertEqual([], missing_files)

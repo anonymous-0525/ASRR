@@ -241,9 +241,9 @@ function formatTime(milliseconds) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-function browserVideoFactory(documentRef, { role, src, poster }) {
+function browserVideoFactory(documentRef, { role, src, poster }, controls = true) {
   const video = documentRef.createElement("video");
-  video.controls = true;
+  video.controls = controls;
   video.muted = true;
   video.playsInline = true;
   video.preload = "metadata";
@@ -328,7 +328,7 @@ export async function mountExplainer(root, {
   if (!response.ok) throw new Error(`Evidence manifest failed with ${response.status}.`);
   const evidence = await response.json();
   const evidenceById = new Map(evidence.cases.map((item) => [item.id, item]));
-  const createVideo = (options) => browserVideoFactory(documentRef, options);
+  const createVideo = (options) => browserVideoFactory(documentRef, options, !root.hasAttribute("data-export"));
   const authoredMedia = createMediaController({ createVideo, now: () => windowRef.performance.now() });
   const modalMedia = createMediaController({ createVideo, now: () => windowRef.performance.now() });
   const clock = createRafClock({
@@ -531,7 +531,13 @@ export async function mountExplainer(root, {
 if (typeof document !== "undefined") {
   const root = document.querySelector('[data-explainer-root="standalone"][data-explainer-auto]');
   if (root) {
-    mountExplainer(root, { mode: "standalone" }).catch((error) => {
+    const options = new URLSearchParams(window.location.search);
+    const exportMode = options.get("export") === "1";
+    root.toggleAttribute("data-export", exportMode);
+    mountExplainer(root, { mode: "standalone" }).then(({ controller }) => {
+      if (exportMode) controller.setTheme("dark");
+      if (!exportMode && options.get("autoplay") === "1") controller.play();
+    }).catch((error) => {
       const status = root.querySelector("#tour-status");
       if (status) status.textContent = `Explainer could not initialize: ${error.message}`;
     });

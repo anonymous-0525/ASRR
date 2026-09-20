@@ -24,6 +24,8 @@ https://anonymous-0525.github.io/ASRR/
 - `static/data/explainer-evidence.json`: traceable measured values and media identities.
 - `static/images/`: compressed figures used by the page.
 - `static/files/asrr_paper.pdf`: anonymous paper PDF linked from the page.
+- `../tools/export_explainer.mjs`: captures the clean presentation as a silent
+  1080p/30fps MP4 and four chapter clips using Firefox, Xvfb, and FFmpeg.
 
 ## Update Notes
 
@@ -43,6 +45,8 @@ https://anonymous-0525.github.io/ASRR/
   a small remaining offset from the ideal. Transparent arms follow the ideal in
   the first two chapters and the Base in the residual comparison. Recorded
   Evidence links directly to the homepage videos and results.
+- Homepage videos retain their original aspect ratios and show captions outside
+  the picture. The green Interactive Demo link opens `explainer.html?autoplay=1`.
 - When refreshing figures or the paper PDF, run the standard-library tests from
   the repository root:
 
@@ -66,3 +70,25 @@ both validation suites:
 node --test tests/explainer-*.test.mjs
 python -m unittest discover -s tests -v
 ```
+
+## Video material export
+
+`explainer.html?export=1` uses the same timeline and recordings, with navigation,
+playback buttons, interactive controls, and native video controls hidden. It
+starts paused for capture. The export is editing material, without narration;
+it is not a finished conference submission video.
+
+Run the local server above, then open the export URL in a 1920x1080 Firefox kiosk
+session on an isolated Xvfb display. With the WebDriver session ID:
+
+```bash
+node tools/export_explainer.mjs \
+  --session WEBDRIVER_SESSION_ID \
+  --display :97 \
+  --output artifacts/explainer-video
+```
+
+FFmpeg and ffprobe must be on `PATH`, or specified via `--ffmpeg` and `--ffprobe`.
+The output includes a 105-second master, four chapter MP4s (25/25/25/30 seconds),
+inspection PNGs, and format metadata. Physical recordings retain 3x playback.
+Keep generated video exports outside the public site assets.

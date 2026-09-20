@@ -118,7 +118,11 @@ export function createMediaController({ createVideo, now = () => Date.now() }) {
     const safeTime = Math.max(0, Number.isFinite(timeSeconds) ? timeSeconds : 0);
     const localGeneration = generation;
     for (const video of videos) {
-      if (Math.abs((video.currentTime ?? 0) - safeTime) > 0.12) video.currentTime = safeTime;
+      const requestedTime = safeTime * currentCase.playbackRate;
+      const mediaTime = Number.isFinite(video.duration) && video.duration > 0
+        ? Math.min(requestedTime, Math.max(0, video.duration - 0.05))
+        : requestedTime;
+      if (Math.abs((video.currentTime ?? 0) - mediaTime) > 0.12) video.currentTime = mediaTime;
       video.playbackRate = currentCase.playbackRate;
       if (shouldPlay) {
         Promise.resolve(video.play?.()).catch(() => {
@@ -168,5 +172,14 @@ export function createMediaController({ createVideo, now = () => Date.now() }) {
     return [...videos];
   }
 
-  return { loadCase, sync, pause, retry, dispose, getState, getVideos };
+  return {
+    loadCase,
+    loadPair: loadCase,
+    sync,
+    pause,
+    retry,
+    dispose,
+    getState,
+    getVideos,
+  };
 }

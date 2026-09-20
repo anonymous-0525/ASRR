@@ -15,6 +15,7 @@
       "asrrVideo": "static/videos/vla_rescues/pi05_libero10_asrr.mp4",
       "basePoster": "static/images/explainer/pi05-base.png",
       "asrrPoster": "static/images/explainer/pi05-asrr.png",
+      "authored": true,
       "playbackRate": 1,
       "note": "Recorded paired rollout: the refined proposal completes the placement after the base rollout fails."
     },
@@ -27,6 +28,7 @@
       "asrrVideo": "static/videos/vla_rescues/openvla_oft_goal_primary_refined.mp4",
       "basePoster": "static/images/explainer/openvla-base.png",
       "asrrPoster": "static/images/explainer/openvla-asrr.png",
+      "authored": false,
       "playbackRate": 1,
       "note": "Recorded paired rollout from the high-success OpenVLA-OFT evaluation."
     },
@@ -39,6 +41,7 @@
       "asrrVideo": "static/videos/real_robot_tasks/corn_to_plate_asrr.mp4",
       "basePoster": "static/images/explainer/corn-base.png",
       "asrrPoster": "static/images/explainer/corn-asrr.png",
+      "authored": true,
       "playbackRate": 3,
       "note": "Recorded physical execution shown at 3x playback."
     },
@@ -51,6 +54,7 @@
       "asrrVideo": "static/videos/real_robot_tasks/block_to_holder_asrr.mp4",
       "basePoster": "static/images/explainer/holder-base.png",
       "asrrPoster": "static/images/explainer/holder-asrr.png",
+      "authored": false,
       "playbackRate": 3,
       "note": "Recorded physical execution shown at 3x playback."
     },
@@ -63,6 +67,7 @@
       "asrrVideo": "static/videos/real_robot_tasks/block_stacking_asrr.mp4",
       "basePoster": "static/images/explainer/stack-base.png",
       "asrrPoster": "static/images/explainer/stack-asrr.png",
+      "authored": false,
       "playbackRate": 3,
       "note": "Recorded physical execution shown at 3x playback."
     }

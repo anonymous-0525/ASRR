@@ -107,13 +107,14 @@ class StaticSiteTests(unittest.TestCase):
 
         case_keys = {
             "id", "policy", "task", "kind", "baseVideo", "asrrVideo",
-            "basePoster", "asrrPoster", "playbackRate", "note",
+            "basePoster", "asrrPoster", "playbackRate", "note", "authored",
         }
         for case in payload["cases"]:
             with self.subTest(case=case["id"]):
                 self.assertEqual(case_keys, set(case))
                 self.assertIn(case["kind"], {"simulation", "real_robot"})
                 self.assertGreater(case["playbackRate"], 0)
+                self.assertIsInstance(case["authored"], bool)
                 self.assertTrue(case["note"].strip())
                 self.assertNotRegex(case["policy"], r"Octo|SmolVLA")
                 for key in ("baseVideo", "asrrVideo", "basePoster", "asrrPoster"):
@@ -121,6 +122,11 @@ class StaticSiteTests(unittest.TestCase):
                     self.assertFalse(Path(ref).is_absolute(), (case["id"], key))
                     self.assertNotIn("..", Path(ref).parts, (case["id"], key))
                     self.assertTrue((DOCS / ref).is_file(), (case["id"], key))
+
+        self.assertEqual(
+            {"pi05-libero10", "corn"},
+            {case["id"] for case in payload["cases"] if case["authored"]},
+        )
 
     def test_local_page_references_exist(self):
         html_path = DOCS / "index.html"

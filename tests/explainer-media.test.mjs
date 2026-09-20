@@ -16,6 +16,15 @@ const CASE_A = {
   note: "Recorded physical execution.",
 };
 
+const CASE_B = {
+  ...CASE_A,
+  id: "pi05-libero10",
+  policy: "pi0.5",
+  task: "LIBERO-10 rescue",
+  kind: "simulation",
+  playbackRate: 1,
+};
+
 function deferred() {
   let resolve;
   let reject;
@@ -78,13 +87,35 @@ test("real robot media retains declared 3x playback", async () => {
     now: () => 0,
   });
 
-  await media.loadCase(CASE_A, 1);
+  assert.equal(typeof media.loadPair, "function");
+  await media.loadPair(CASE_A, 1);
   media.sync(4, true);
 
   assert.equal(videos.length, 2);
   assert.ok(videos.every((video) => video.playbackRate === 3));
-  assert.ok(videos.every((video) => video.currentTime === 4));
+  assert.ok(videos.every((video) => video.currentTime === 12));
   assert.ok(videos.every((video) => video.playCalls === 1));
+});
+
+test("switching an authored pair pauses and releases the stale videos", async () => {
+  const videos = [];
+  const media = createMediaController({
+    createVideo: () => {
+      const video = makeVideo();
+      videos.push(video);
+      return video;
+    },
+    now: () => 0,
+  });
+
+  await media.loadPair(CASE_B, 1);
+  const stale = media.getVideos();
+  await media.loadPair(CASE_A, 2);
+  media.sync(2, false);
+
+  assert.ok(stale.every((video) => video.pauseCalls >= 1));
+  assert.ok(media.getVideos().every((video) => video.playbackRate === 3));
+  assert.ok(media.getVideos().every((video) => video.currentTime === 6));
 });
 
 test("metadata loading cannot reset the declared playback rate", async () => {

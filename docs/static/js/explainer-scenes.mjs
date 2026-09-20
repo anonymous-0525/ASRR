@@ -220,26 +220,21 @@ function residualScene(state) {
   </div>`, "Method animation");
 }
 
-const EVIDENCE_CASES = [
-  ["pi05-libero10", "pi0.5", "LIBERO-10", "pi05-base.png", "pi05-asrr.png"],
-  ["corn", "Piper", "Corn to plate", "corn-base.png", "corn-asrr.png"],
-];
-
-function evidenceCard([id, policy, task, basePoster, asrrPoster]) {
-  return `<button type="button" class="evidence-card" data-evidence-case="${id}">
-    <span class="evidence-card__heading"><strong>${policy}</strong><small>${task}</small></span>
-    <span class="evidence-thumbs"><span><img src="static/images/explainer/${basePoster}" alt="${task} Base rollout poster"><em>Base</em></span><span><img src="static/images/explainer/${asrrPoster}" alt="${task} ASRR rollout poster"><em>ASRR</em></span></span>
-    <span class="evidence-card__action">Open recorded pair <span aria-hidden="true">&#8599;</span></span>
-  </button>`;
-}
-
 function evidenceScene(state) {
-  return sceneFrame(state, `<div class="metric-ribbon" aria-label="Measured aggregate results">
-    <div><strong>+14.4 pp</strong><span>pi0.5 mean gain</span></div>
-    <div><strong>25-63%</strong><span>less recorded compute</span></div>
-    <div><strong>+6.7 pp</strong><span>real-robot aggregate</span></div>
-  </div>
-  <div class="evidence-wall is-expanded" data-evidence-wall>${EVIDENCE_CASES.map(evidenceCard).join("")}</div>`, "Recorded + measured");
+  const realRobot = state.evidenceCaseId === "corn";
+  return sceneFrame(state, `<div class="authored-evidence" data-authored-evidence="${state.evidenceCaseId}">
+    <div class="authored-evidence__heading">
+      <div><span>${realRobot ? "Physical manipulation" : "VLA simulation"}</span><strong>${realRobot ? "Piper / Corn-to-plate" : "pi0.5 / LIBERO-10"}</strong></div>
+      <span class="phase-badge">${realRobot ? "3x playback" : "Recorded rollout"}</span>
+    </div>
+    <div class="authored-media-pair" data-authored-media-pair aria-label="Synchronized Base and ASRR recorded executions"></div>
+    <div class="evidence-overlay" aria-label="Measured aggregate results">
+      ${realRobot
+        ? '<div><strong>+6.7 pp</strong><span>real-robot aggregate</span></div><div><strong>170 / 240</strong><span>ASRR successes</span></div>'
+        : '<div><strong>+14.4 pp</strong><span>pi0.5 mean gain</span></div><div><strong>25-63%</strong><span>less recorded compute</span></div>'}
+      <button type="button" data-open-evidence-library>More evidence <span aria-hidden="true">&#8599;</span></button>
+    </div>
+  </div>`, "Recorded + measured");
 }
 
 function inspectorControls(state) {

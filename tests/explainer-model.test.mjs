@@ -68,6 +68,16 @@ test("the robot arm interpolates continuously between authored actions", () => {
   assert.ok(state.arm.base[1] < a0[1] && state.arm.base[1] > a1[1]);
 });
 
+test("recorded evidence schedules one simulation and one real pair", () => {
+  const simulation = deriveTourState(90_001);
+  const robot = deriveTourState(105_001);
+
+  assert.equal(simulation.evidenceCaseId, "pi05-libero10");
+  assert.equal(simulation.evidenceLocalTimeMs, 1);
+  assert.equal(robot.evidenceCaseId, "corn");
+  assert.equal(robot.evidenceLocalTimeMs, 1);
+});
+
 test("arbitrary seeks preserve stable action identities", () => {
   const times = [120_000, 12_000, 90_000, 60_000, 0, 105_000];
   const identities = times.map((timeMs) =>

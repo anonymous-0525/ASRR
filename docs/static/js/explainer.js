@@ -49,8 +49,8 @@ export function createTourController({ model, renderer, media, storage, clock })
       manual: manualOverrides !== null,
     };
     renderer(scene, state);
-    if (scene.chapterIndex === 4) {
-      media?.sync?.(Math.max(0, (scene.timeMs - CHAPTERS[4].startMs) / 1000), playing);
+    if (scene.chapterIndex === 3) {
+      media?.sync?.(scene.evidenceLocalTimeMs / 1000, playing);
     } else {
       media?.pause?.();
     }
@@ -300,14 +300,43 @@ async function initializeBrowserExplainer() {
   if (!response.ok) throw new Error(`Evidence manifest failed with ${response.status}.`);
   const evidence = await response.json();
   const evidenceById = new Map(evidence.cases.map((item) => [item.id, item]));
-  const media = createMediaController({ createVideo: browserVideoFactory, now: () => performance.now() });
+  const authoredMedia = createMediaController({ createVideo: browserVideoFactory, now: () => performance.now() });
+  const modalMedia = createMediaController({ createVideo: browserVideoFactory, now: () => performance.now() });
   const clock = createRafClock();
+  let renderedEvidenceCase = null;
+  let authoredCaseId = null;
+
+  async function ensureAuthoredEvidence(scene) {
+    const caseData = evidenceById.get(scene.evidenceCaseId);
+    const host = elements.stage.querySelector("[data-authored-media-pair]");
+    if (!caseData || !host) return;
+
+    if (authoredCaseId !== caseData.id) {
+      authoredCaseId = caseData.id;
+      const token = authoredMedia.getState().generation + 1;
+      const loadPromise = authoredMedia.loadPair(caseData, token);
+      mountMediaPair(host, authoredMedia.getVideos());
+      const result = await loadPromise;
+      if (authoredCaseId !== caseData.id || result.status !== "ready") return;
+      const currentHost = elements.stage.querySelector("[data-authored-media-pair]");
+      if (currentHost) mountMediaPair(currentHost, authoredMedia.getVideos());
+      authoredMedia.sync(scene.evidenceLocalTimeMs / 1000, clock.isPlaying());
+      return;
+    }
+
+    if (!host.children.length) mountMediaPair(host, authoredMedia.getVideos());
+  }
 
   function updateChrome(scene, controllerState) {
-    renderScene(elements.stage, elements.inspector, scene);
+    const evidenceChanged = scene.chapterIndex === 3 && renderedEvidenceCase !== scene.evidenceCaseId;
+    if (scene.chapterIndex !== 3 || evidenceChanged) {
+      renderScene(elements.stage, elements.inspector, scene);
+      renderedEvidenceCase = scene.chapterIndex === 3 ? scene.evidenceCaseId : null;
+      if (scene.chapterIndex === 3) ensureAuthoredEvidence(scene);
+    }
     renderChapterTabs(elements.tabs, scene);
     elements.timeline.value = String(scene.timeMs);
-    elements.elapsed.textContent = `${formatTime(scene.timeMs)} / 01:30`;
+    elements.elapsed.textContent = `${formatTime(scene.timeMs)} / 02:00`;
     elements.play.innerHTML = controllerState.atEnd
       ? '<span aria-hidden="true">&#8634;</span><span>Replay</span>'
       : controllerState.playing
@@ -327,7 +356,7 @@ async function initializeBrowserExplainer() {
   const controller = createTourController({
     model: { deriveTourState },
     renderer: updateChrome,
-    media,
+    media: authoredMedia,
     storage: window.localStorage,
     clock,
   });
@@ -390,36 +419,63 @@ async function initializeBrowserExplainer() {
     elements.mediaStatus.textContent = `Loading ${caseData.policy} / ${caseData.task}...`;
     elements.retry.hidden = true;
     if (!elements.dialog.open) elements.dialog.showModal();
-    const loadPromise = media.loadCase(caseData, media.getState().generation + 1);
-    mountMediaPair(elements.mediaPair, media.getVideos());
+    const loadPromise = modalMedia.loadPair(caseData, modalMedia.getState().generation + 1);
+    mountMediaPair(elements.mediaPair, modalMedia.getVideos());
     const mediaState = await loadPromise;
     if (mediaState.status === "error") {
       elements.mediaStatus.textContent = "Recorded media is unavailable. The schematic tour remains active.";
       elements.retry.hidden = false;
     } else {
       elements.mediaStatus.textContent = `${caseData.note} ${caseData.playbackRate === 3 ? "Playback is set to 3x." : ""}`;
-      media.sync(0, false);
+      modalMedia.sync(0, false);
     }
   }
 
+  function openEvidenceLibrary() {
+    controller.pause();
+    modalMedia.pause();
+    elements.mediaPair.replaceChildren();
+    const library = document.createElement("div");
+    library.className = "evidence-library";
+    for (const caseData of evidence.cases.filter((item) => !item.authored)) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.evidenceCase = caseData.id;
+      button.innerHTML = `<strong>${caseData.policy}</strong><span>${caseData.task}</span>`;
+      library.append(button);
+    }
+    elements.mediaPair.append(library);
+    elements.mediaStatus.textContent = "Choose another recorded Base and ASRR pair.";
+    elements.retry.hidden = true;
+    if (!elements.dialog.open) elements.dialog.showModal();
+  }
+
   document.addEventListener("click", (event) => {
+    if (event.target.closest?.("[data-open-evidence-library]")) {
+      openEvidenceLibrary();
+      return;
+    }
     const evidenceCase = event.target.closest?.("[data-evidence-case]");
     if (evidenceCase) openEvidence(evidenceCase.dataset.evidenceCase);
     if (event.target.closest?.("[data-dialog-close]")) elements.dialog.close();
   });
-  elements.dialog.addEventListener("close", () => media.pause());
+  elements.dialog.addEventListener("close", () => modalMedia.pause());
   elements.retry.addEventListener("click", async () => {
     elements.retry.hidden = true;
     elements.mediaStatus.textContent = "Retrying recorded media...";
-    const retryPromise = media.retry();
-    mountMediaPair(elements.mediaPair, media.getVideos());
+    const retryPromise = modalMedia.retry();
+    mountMediaPair(elements.mediaPair, modalMedia.getVideos());
     const result = await retryPromise;
     elements.retry.hidden = result.status !== "error";
     elements.mediaStatus.textContent = result.status === "ready" ? result.caseData.note : "Recorded media is still unavailable.";
   });
   document.addEventListener("visibilitychange", () => controller.onVisibilityChange(document.hidden));
   document.addEventListener("keydown", (event) => controller.handleKey(event));
-  window.addEventListener("pagehide", () => { controller.dispose(); media.dispose(); }, { once: true });
+  window.addEventListener("pagehide", () => {
+    controller.dispose();
+    authoredMedia.dispose();
+    modalMedia.dispose();
+  }, { once: true });
 }
 
 if (typeof document !== "undefined") {

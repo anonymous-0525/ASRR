@@ -143,6 +143,13 @@ export function deriveTourState(timeMs, overrides = {}) {
       : composeResidual(action.base, action.residual, alpha, action.mask, action.bound),
   }));
   const motionProgress = sequenceProgress(chapter.index, chapterProgress);
+  const evidenceOffsetMs = Math.max(0, clampedTime - CHAPTERS[3].startMs);
+  const evidenceCaseId = chapter.index === 3 && evidenceOffsetMs >= 15_000
+    ? "corn"
+    : "pi05-libero10";
+  const evidenceLocalTimeMs = chapter.index === 3
+    ? evidenceOffsetMs % 15_000
+    : 0;
 
   return {
     timeMs: clampedTime,
@@ -163,6 +170,8 @@ export function deriveTourState(timeMs, overrides = {}) {
       base: interpolateAction(actions, motionProgress, "base"),
       refined: interpolateAction(actions, motionProgress, "refined"),
     },
+    evidenceCaseId,
+    evidenceLocalTimeMs,
     context: variant === "C"
       ? {
           global: [0.64, 0.28],

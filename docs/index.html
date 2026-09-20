@@ -24,6 +24,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="static/css/explainer.css">
   <link rel="stylesheet" href="static/css/site.css">
 </head>
 <body>
@@ -63,26 +64,110 @@
       </div>
       <div class="hero__mosaic" aria-label="ASRR simulation and real-robot examples">
         <figure class="hero__tile">
-          <img src="static/images/hero_sim_primary.png" alt="Simulation primary-camera view during a refined manipulation rollout">
-          <figcaption>Simulation · primary</figcaption>
+          <video class="hero__tile-video" muted loop playsinline preload="metadata" poster="static/images/hero_sim_primary.png" src="static/videos/vla_rescues/pi05_libero10_base.mp4"></video>
+          <figcaption><span>&pi;<sub>0.5</sub> · LIBERO-10</span><strong class="hero__tile-role hero__tile-role--base">Base</strong></figcaption>
         </figure>
         <figure class="hero__tile">
-          <img src="static/images/hero_real_corn.png" alt="Piper robot placing corn onto a plate">
-          <figcaption>Real robot · global</figcaption>
+          <video class="hero__tile-video" muted loop playsinline preload="metadata" poster="static/images/hero_rescue_refined_primary.png" src="static/videos/vla_rescues/pi05_libero10_asrr.mp4"></video>
+          <figcaption><span>&pi;<sub>0.5</sub> · LIBERO-10</span><strong class="hero__tile-role hero__tile-role--asrr">ASRR</strong></figcaption>
         </figure>
         <figure class="hero__tile">
-          <img src="static/images/hero_sim_wrist.png" alt="Simulation wrist-camera view during a refined manipulation rollout">
-          <figcaption>Simulation · wrist</figcaption>
+          <video class="hero__tile-video" muted loop playsinline preload="metadata" poster="static/images/hero_real_corn.png" data-hero-playback-rate="3" src="static/videos/real_robot_tasks/corn_to_plate_base.mp4"></video>
+          <figcaption><span>Corn to plate · 3&times;</span><strong class="hero__tile-role hero__tile-role--base">Base</strong></figcaption>
         </figure>
         <figure class="hero__tile">
-          <img src="static/images/hero_real_holder.png" alt="Piper wrist-camera view while placing a block into a holder">
-          <figcaption>Real robot · wrist</figcaption>
+          <video class="hero__tile-video" muted loop playsinline preload="metadata" poster="static/images/hero_real_corn.png" data-hero-playback-rate="3" src="static/videos/real_robot_tasks/corn_to_plate_asrr.mp4"></video>
+          <figcaption><span>Corn to plate · 3&times;</span><strong class="hero__tile-role hero__tile-role--asrr">ASRR</strong></figcaption>
         </figure>
       </div>
     </div>
   </header>
 
   <main>
+    <section class="explainer-band" id="interactive-explainer" data-explainer-root="embedded" aria-labelledby="embedded-explainer-title">
+      <div class="container">
+        <div class="explainer-band__heading">
+          <div>
+            <p class="eyebrow">Interactive explainer</p>
+            <h2 id="embedded-explainer-title">Follow one proposal through ASRR</h2>
+            <p>A two-minute guided explanation of the local error, editable interface, residual correction, and recorded evidence.</p>
+          </div>
+          <a class="explainer-band__standalone" href="explainer.html">Open full screen <span aria-hidden="true">&#8599;</span></a>
+        </div>
+
+        <div class="explainer-app">
+          <header class="app-header">
+            <div class="app-title"><strong>ASRR</strong><span>Action sequence refinement, step by step</span></div>
+            <button id="theme-toggle" class="icon-command" type="button" aria-label="Switch to light theme" title="Switch theme" disabled><span aria-hidden="true">&#9788;</span></button>
+          </header>
+
+          <nav id="chapter-tabs" class="chapter-tabs" aria-label="Explainer chapters">
+            <button type="button" data-chapter-index="0" aria-current="step" disabled><span>01</span>Local Error</button>
+            <button type="button" data-chapter-index="1" disabled><span>02</span>Editable Interface</button>
+            <button type="button" data-chapter-index="2" disabled><span>03</span>Residual Refinement</button>
+            <button type="button" data-chapter-index="3" disabled><span>04</span>Recorded Evidence</button>
+          </nav>
+
+          <div class="workbench">
+            <section class="stage-panel" aria-labelledby="stage-heading">
+              <div class="panel-heading">
+                <div><p class="overline">Illustrative action-space projection</p><h1 id="stage-heading">A useful proposal with one local error</h1></div>
+                <span class="evidence-label evidence-label--illustrative">Illustrative</span>
+              </div>
+              <div id="stage" class="stage-viewport" tabindex="0" aria-label="ASRR animated explanation stage">
+                <svg class="stage-fallback" viewBox="0 0 900 480" role="img" aria-labelledby="embedded-fallback-title embedded-fallback-desc">
+                  <title id="embedded-fallback-title">Base and refined action trajectories</title>
+                  <desc id="embedded-fallback-desc">A base action sequence approaches a target with a local error. A bounded residual moves the selected action toward a refined trajectory.</desc>
+                  <path class="fallback-grid" d="M70 390H840M70 310H840M70 230H840M70 150H840M170 70V420M330 70V420M490 70V420M650 70V420M810 70V420"></path>
+                  <path class="fallback-base" d="M95 365 C250 315 350 250 475 220 S650 240 795 115"></path>
+                  <path class="fallback-refined" d="M95 365 C250 315 350 250 475 220 S650 170 795 115"></path>
+                  <path class="fallback-residual" d="M620 224 L638 169"></path>
+                  <circle class="fallback-error" cx="620" cy="224" r="12"></circle>
+                  <circle class="fallback-target" cx="795" cy="115" r="20"></circle>
+                </svg>
+              </div>
+            </section>
+
+            <aside id="inspector" class="inspector" aria-label="Current ASRR operation">
+              <div class="inspector__header"><p class="overline">Current operation</p><span class="chapter-index">01 / 04</span></div>
+              <h2>Locate the execution error</h2>
+              <p class="inspector__takeaway">Most of the predicted sequence is already useful. The highlighted timestep introduces a local deviation near task completion.</p>
+              <dl class="operation-list">
+                <div><dt>Input</dt><dd>Frozen policy proposal <var>A<sub>base</sub></var></dd></div>
+                <div><dt>Change</dt><dd>Inspect timestep <code>a0</code></dd></div>
+                <div><dt>Evidence</dt><dd>Teaching values, not exported activations</dd></div>
+              </dl>
+              <div class="inspector__formula" aria-label="ASRR composition formula"><span>A<sub>refined</sub></span><span>=</span><span>A<sub>base</sub></span><span>+</span><span class="formula-residual">&alpha;(M &#8857; &Delta;A)</span></div>
+              <div id="variant-toggle" class="segmented-control" aria-label="Refiner input variant">
+                <button type="button" data-variant="A" aria-pressed="false" disabled>ASRR-A</button>
+                <button type="button" data-variant="C" aria-pressed="true" disabled>ASRR-C</button>
+              </div>
+              <button id="before-after" class="hold-command" type="button" aria-pressed="false" disabled><span aria-hidden="true">&#8644;</span>Hold for Base proposal</button>
+            </aside>
+          </div>
+
+          <div class="playback" aria-label="Guided tour playback">
+            <div class="playback__commands">
+              <button id="previous-chapter" class="icon-command" type="button" aria-label="Previous chapter" title="Previous chapter" disabled><span aria-hidden="true">&#124;&#9664;</span></button>
+              <button id="play-toggle" class="play-command" type="button" aria-label="Play guided tour" disabled><span aria-hidden="true">&#9654;</span><span>Play</span></button>
+              <button id="next-chapter" class="icon-command" type="button" aria-label="Next chapter" title="Next chapter" disabled><span aria-hidden="true">&#9654;&#124;</span></button>
+              <button id="replay-chapter" class="icon-command" type="button" aria-label="Replay current chapter" title="Replay chapter" disabled><span aria-hidden="true">&#8634;</span></button>
+            </div>
+            <label class="timeline-wrap" for="tour-timeline"><span class="sr-only">Tour timeline</span><input id="tour-timeline" type="range" min="0" max="120000" value="0" step="100" disabled><span class="timeline-chapters" aria-hidden="true"><i></i><i></i><i></i></span></label>
+            <output id="elapsed-time" class="elapsed-time" for="tour-timeline">00:00 / 02:00</output>
+          </div>
+        </div>
+
+        <dialog id="media-dialog" class="media-dialog" aria-labelledby="media-dialog-title">
+          <div class="dialog-heading"><div><p class="overline">Recorded execution</p><h2 id="media-dialog-title">Evidence comparison</h2></div><button class="icon-command" type="button" data-dialog-close aria-label="Close evidence comparison" title="Close"><span aria-hidden="true">&#10005;</span></button></div>
+          <div id="media-pair" class="media-pair"></div>
+          <p id="media-status" class="media-status" role="status">Select an evidence case to load its recorded Base and ASRR rollouts.</p>
+          <button id="media-retry" class="retry-command" type="button" hidden>Retry media</button>
+        </dialog>
+        <p id="tour-status" class="sr-only" aria-live="polite">ASRR explainer ready.</p>
+      </div>
+    </section>
+
     <section class="section" id="abstract">
       <div class="container content-narrow">
         <p class="eyebrow">Abstract</p>
@@ -102,32 +187,6 @@
           modern VLAs, and three real-robot tasks, the results establish predicted
           action sequences as editable adaptation interfaces.
         </p>
-      </div>
-    </section>
-
-    <section class="explainer-preview" id="interactive-explainer" aria-labelledby="explainer-preview-title">
-      <div class="container explainer-preview__inner">
-        <div class="explainer-preview__copy">
-          <p class="eyebrow">Interactive explainer</p>
-          <h2 id="explainer-preview-title">Follow one proposal through ASRR</h2>
-          <p>Inspect the local error, residual edit, native execution rule, and recorded evidence in a 90-second interactive tour.</p>
-          <a class="button button--ink" href="explainer.html"><span>Explore ASRR</span><span aria-hidden="true">&#8594;</span></a>
-          <span class="explainer-preview__duration">About 90 seconds</span>
-        </div>
-        <div class="explainer-preview__visual" aria-label="Miniature Base and ASRR action trajectories">
-          <svg viewBox="0 0 560 230" role="img" aria-labelledby="preview-visual-title preview-visual-desc">
-            <title id="preview-visual-title">Action proposal refinement</title>
-            <desc id="preview-visual-desc">A coral residual moves one action from the blue Base proposal toward the teal refined trajectory.</desc>
-            <path class="preview-grid" d="M35 190H530M35 130H530M35 70H530M120 25V205M245 25V205M370 25V205M495 25V205"></path>
-            <path class="preview-base" d="M45 180 C150 150 235 105 320 105 S430 130 515 42"></path>
-            <path class="preview-refined" d="M45 180 C150 150 235 105 320 105 S430 77 515 42"></path>
-            <path class="preview-residual" d="M405 116 L420 76"></path>
-            <circle class="preview-base-point" cx="405" cy="116" r="8"></circle>
-            <circle class="preview-asrr-point" cx="420" cy="76" r="8"></circle>
-            <text x="45" y="215">Base proposal</text>
-            <text class="preview-asrr-label" x="428" y="69">ASRR edit</text>
-          </svg>
-        </div>
       </div>
     </section>
 
@@ -290,6 +349,6 @@ refined = apply_residual(base_action, delta, alpha=1.0)</code></pre>
   </main>
 
   <footer class="footer"><div class="container footer__inner"><span>ASRR project page</span><span>Anonymous ICRA 2027 submission</span></div></footer>
-  <script src="static/js/site.js"></script>
+  <script type="module" src="static/js/site.js"></script>
 </body>
 </html>

@@ -32,17 +32,33 @@ def parse_page(path):
 
 
 class StaticSiteTests(unittest.TestCase):
-    def test_homepage_links_one_compact_explainer_between_abstract_and_method(self):
+    def test_homepage_embeds_live_explainer_between_hero_and_abstract(self):
         html = (DOCS / "index.html").read_text(encoding="utf-8")
+        hero_position = html.index('<header class="hero">')
+        explainer_position = html.index('data-explainer-root="embedded"')
         abstract_position = html.index('id="abstract"')
-        preview_position = html.index('id="interactive-explainer"')
-        method_position = html.index('id="method"')
 
-        self.assertLess(abstract_position, preview_position)
-        self.assertLess(preview_position, method_position)
-        self.assertEqual(1, html.count("Explore ASRR"))
-        self.assertIn("90-second interactive tour", html)
+        self.assertLess(hero_position, explainer_position)
+        self.assertLess(explainer_position, abstract_position)
+        self.assertNotIn('class="explainer-preview"', html)
+        self.assertIn("two-minute guided explanation", html)
         self.assertIn('href="explainer.html"', html)
+
+    def test_homepage_hero_uses_four_local_looping_video_tiles(self):
+        html = (DOCS / "index.html").read_text(encoding="utf-8")
+        video_tags = re.findall(r'<video\s+[^>]*class="hero__tile-video"[^>]*>', html)
+
+        self.assertEqual(4, len(video_tags))
+        for tag in video_tags:
+            with self.subTest(tag=tag):
+                self.assertIn(" muted", tag)
+                self.assertIn(" loop", tag)
+                self.assertIn(" playsinline", tag)
+                self.assertRegex(tag, r'poster="static/images/[^"]+\.png"')
+                self.assertRegex(tag, r'src="static/videos/[^"]+\.mp4"')
+
+        self.assertEqual(2, html.count('class="hero__tile-role hero__tile-role--base"'))
+        self.assertEqual(2, html.count('class="hero__tile-role hero__tile-role--asrr"'))
 
     def test_explainer_sources_remain_anonymous_and_tracking_free(self):
         source = "\n".join(

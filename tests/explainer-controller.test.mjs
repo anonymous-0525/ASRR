@@ -53,13 +53,14 @@ function makeController(initial = 0, storedTheme = null) {
   return { controller, clock, renders, stored };
 }
 
-test("local error renders every labelled action and follows history from a0", () => {
+test("local error renders every labelled action and begins the active sequence at a3", () => {
   const stage = new FakeElement();
   const inspector = new FakeElement();
-  const state = deriveTourState(15_000);
+  const state = deriveTourState(0);
 
   renderScene(stage, inspector, state);
 
+  assert.equal(state.selectedActionId, "a3");
   assert.match(stage.innerHTML, /data-arm="active"/);
   assert.equal((stage.innerHTML.match(/data-action-label=/g) ?? []).length, 8);
   assert.equal((stage.innerHTML.match(/is-visited/g) ?? []).length, state.visitedThrough + 1);

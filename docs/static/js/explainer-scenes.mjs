@@ -5,7 +5,7 @@ const CHAPTER_COPY = [
     title: "A useful proposal can still contain a local error",
     takeaway: "The arm follows a broadly useful action proposal until one local deviation disrupts execution.",
     input: "Frozen policy proposal A_base",
-    change: "Follow each action from a0 through a7",
+    change: "Enter at a3 and follow the proposal through a7",
     evidence: "Illustrative action-space projection",
   },
   {

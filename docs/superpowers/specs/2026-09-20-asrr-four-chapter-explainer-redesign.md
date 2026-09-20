@@ -36,7 +36,7 @@ preserved, appears at the end of Residual Refinement.
 
 ## Chapter 1: Local Error
 
-The scene starts at `a0` and advances through `a7` in order. All action labels
+The scene enters at `a3` and advances through `a7` in order. All action labels
 remain visible throughout the chapter.
 
 - The current action is dark gold.

@@ -57,11 +57,11 @@ test("the redesigned tour has four equal 30-second chapters", () => {
   assert.equal(chapterAtTime(120_000).id, "recorded-evidence");
 });
 
-test("local error walks from a0 through a7 without skipping", () => {
-  assert.equal(deriveTourState(0).selectedActionId, "a0");
+test("local error begins at a3 and walks through a7 without skipping", () => {
+  assert.equal(deriveTourState(0).selectedActionId, "a3");
   assert.equal(deriveTourState(29_999).selectedActionId, "a7");
-  for (let index = 0; index < 8; index += 1) {
-    const state = deriveTourState(index * 3_750 + 1);
+  for (let index = 3; index < 8; index += 1) {
+    const state = deriveTourState((index - 3) * 6_000 + 1);
     assert.equal(state.selectedStep, index);
     assert.equal(state.visitedThrough, index - 1);
   }

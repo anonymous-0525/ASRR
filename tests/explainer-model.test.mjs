@@ -48,12 +48,12 @@ test("tour boundaries always resolve to a valid chapter", () => {
   }
 });
 
-test("local error walks from a0 through a7 without skipping", () => {
-  assert.equal(deriveTourState(0).selectedActionId, "a0");
+test("local error begins at a3 and walks through a7 without skipping", () => {
+  assert.equal(deriveTourState(0).selectedActionId, "a3");
   assert.equal(deriveTourState(29_999).selectedActionId, "a7");
 
-  for (let index = 0; index < 8; index += 1) {
-    const state = deriveTourState(index * 3_750 + 1);
+  for (let index = 3; index < 8; index += 1) {
+    const state = deriveTourState((index - 3) * 6_000 + 1);
     assert.equal(state.selectedStep, index);
     assert.equal(state.visitedThrough, index - 1);
   }
@@ -61,11 +61,11 @@ test("local error walks from a0 through a7 without skipping", () => {
 
 test("the robot arm interpolates continuously between authored actions", () => {
   const state = deriveTourState(1_875);
-  const a0 = state.actions[0].base;
-  const a1 = state.actions[1].base;
+  const a3 = state.actions[3].base;
+  const a4 = state.actions[4].base;
 
-  assert.ok(state.arm.base[0] > a0[0] && state.arm.base[0] < a1[0]);
-  assert.ok(state.arm.base[1] < a0[1] && state.arm.base[1] > a1[1]);
+  assert.ok(state.arm.base[0] > a3[0] && state.arm.base[0] < a4[0]);
+  assert.ok(state.arm.base[1] < a3[1] && state.arm.base[1] > a4[1]);
 });
 
 test("recorded evidence schedules one simulation and one real pair", () => {

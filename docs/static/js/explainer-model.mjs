@@ -82,17 +82,22 @@ export function chapterAtTime(timeMs) {
   ) ?? CHAPTERS[0];
 }
 
-function localErrorStep(progress) {
+function sequenceStep(progress) {
   return Math.min(7, Math.floor(clamp(progress, 0, 0.999999) * 8));
 }
 
+function localErrorStep(progress) {
+  return 3 + Math.min(4, Math.floor(clamp(progress, 0, 0.999999) * 5));
+}
+
 function authoredStep(chapterIndex, chapterProgress) {
-  if (chapterIndex === 0 || chapterIndex === 1) return localErrorStep(chapterProgress);
+  if (chapterIndex === 0) return localErrorStep(chapterProgress);
+  if (chapterIndex === 1) return sequenceStep(chapterProgress);
   if (chapterIndex === 2) {
     const modeProgress = chapterProgress < 0.5
       ? chapterProgress * 2
       : (chapterProgress - 0.5) * 2;
-    return localErrorStep(modeProgress);
+    return sequenceStep(modeProgress);
   }
   return 5;
 }
@@ -142,7 +147,9 @@ export function deriveTourState(timeMs, overrides = {}) {
       ? [...action.base]
       : composeResidual(action.base, action.residual, alpha, action.mask, action.bound),
   }));
-  const motionProgress = sequenceProgress(chapter.index, chapterProgress);
+  const motionProgress = chapter.index === 0
+    ? (3 + chapterProgress * 4) / actions.length
+    : sequenceProgress(chapter.index, chapterProgress);
   const evidenceOffsetMs = Math.max(0, clampedTime - CHAPTERS[3].startMs);
   const evidenceCaseId = chapter.index === 3 && evidenceOffsetMs >= 15_000
     ? "corn"

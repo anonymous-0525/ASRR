@@ -127,7 +127,8 @@ function targetRegion(state, refined = false) {
 function trajectoryLegend(refined = false) {
   return `<div class="trajectory-legend" aria-label="Trajectory colors">
     <span class="legend-base">Base proposal</span>
-    <span class="${refined ? "legend-refined" : "legend-ideal"}">${refined ? "ASRR refined" : "Ideal path"}</span>
+    <span class="legend-ideal">Ideal path</span>
+    ${refined ? '<span class="legend-refined">ASRR refined</span>' : ""}
   </div>`;
 }
 
@@ -146,6 +147,7 @@ function localErrorScene(state) {
   return sceneFrame(state, `${trajectoryLegend()}<div class="diagram-wrap local-error-stage">
     <svg class="trajectory-svg" viewBox="0 0 900 500" role="img" aria-label="Yellow Base proposal deviates at a5 from the blue ideal path and misses the target at a7">
       <path class="diagram-grid" d="M90 460H840M90 355H840M90 250H840M90 145H840"></path>
+      ${robotArm(projectedPoint(state.arm.ideal), "ideal-ghost", "robot-arm--ideal-ghost")}
       ${robotArm(activePoint, "active", "robot-arm--active")}
       ${targetRegion(state)}
       <path class="trajectory trajectory--ideal" data-path="ideal" d="${trajectoryPath(state.actions, (action) => action.ideal)}"></path>
@@ -170,9 +172,10 @@ function laneArm(state, key, role, className) {
   const [x, y] = projectedPoint(state.arm[key]);
   return `<svg class="interface-arm" viewBox="0 0 900 500" role="img" aria-label="${refined ? "ASRR corrects the Base proposal into a trajectory reaching the target" : "Base action trajectory with a local deviation"}">
     <path class="interface-ground" d="M220 460H510"></path>
+    ${robotArm(projectedPoint(state.arm.ideal), "ideal-ghost", "robot-arm--ideal-ghost")}
     ${robotArm([x, y], role, className)}
     ${targetRegion(state, refined)}
-    ${refined ? "" : `<path class="trajectory trajectory--ideal" d="${trajectoryPath(state.actions, (action) => action.ideal)}"></path>`}
+    <path class="trajectory trajectory--ideal" data-path="ideal" d="${trajectoryPath(state.actions, (action) => action.ideal)}"></path>
     <path class="trajectory trajectory--history ${refined ? "trajectory--ghost" : ""}" d="${trajectoryPath(state.actions, (action) => action.base)}"></path>
     ${refined ? `<path class="trajectory trajectory--refined" d="${trajectoryPath(state.actions, (action) => action.refined)}"></path>` : ""}
     ${actionHistoryPoints(state, key)}
@@ -218,6 +221,11 @@ function residualScene(state) {
   const refinedValues = state.actions.map((action) => action.refined);
   const basePoint = projectedPoint(state.arm.base);
   const refinedPoint = projectedPoint(state.arm.refined);
+  // Attach the context callout to the midpoint of the a5 correction curve.
+  const errorAction = state.actions.find((action) => action.localError);
+  const errorBase = point(errorAction);
+  const errorRefined = point(errorAction, "refined");
+  const contextAnchor = [(errorBase[0] + errorRefined[0]) / 2 + 5.5, (errorBase[1] + errorRefined[1]) / 2 - 9];
   const context = state.variant === "C" ? `<div class="context-path" data-context-path>
     <div class="policy-data"><span>Policy-side data</span><strong>state + policy features</strong></div>
     <span class="context-link" aria-hidden="true">&#8594;</span>
@@ -236,14 +244,15 @@ function residualScene(state) {
       ${robotArm(basePoint, "base-ghost", "robot-arm--ghost")}
       ${robotArm(refinedPoint, "refined", "robot-arm--refined")}
       ${targetRegion(state, true)}
+      <path class="trajectory trajectory--ideal" data-path="ideal" d="${trajectoryPath(state.actions, (action) => action.ideal)}"></path>
       <path class="trajectory trajectory--history trajectory--ghost" d="${trajectoryPath(state.actions, (action) => action.base)}"></path>
       <path class="trajectory trajectory--refined" d="${trajectoryPath(state.actions, (action) => action.refined)}"></path>
       ${state.before ? "" : residualCurves(state, refinedValues)}
       ${actionHistoryPoints(state)}
       <circle class="moving-refined-point" cx="${refinedPoint[0]}" cy="${refinedPoint[1]}" r="8"></circle>
       ${state.variant === "C" && !state.before ? `<g class="policy-state-annotation" data-policy-state-at="a5">
-        <path class="policy-state-leader" d="M486 74C530 90 525 153 569.5 176.3"></path>
-        <circle cx="569.5" cy="176.3" r="4"></circle>
+        <path class="policy-state-leader" d="M486 74C530 90 525 153 ${contextAnchor.join(" ")}"></path>
+        <circle cx="${contextAnchor[0]}" cy="${contextAnchor[1]}" r="4"></circle>
         <rect x="164" y="12" width="338" height="68" rx="5"></rect>
         <text x="180" y="39">Policy state used at a5</text>
         <text class="policy-state-detail" x="180" y="62">conditions this residual correction</text>
@@ -253,7 +262,7 @@ function residualScene(state) {
   </div>`, "Method animation");
 }
 
-function evidenceScene(state) {
+function evidenceScene(state, { homePath = "./" } = {}) {
   const realRobot = state.evidenceCaseId === "corn";
   return sceneFrame(state, `<div class="authored-evidence" data-authored-evidence="${state.evidenceCaseId}">
     <div class="authored-evidence__heading">
@@ -265,7 +274,10 @@ function evidenceScene(state) {
       ${realRobot
         ? '<div><strong>+6.7 pp</strong><span>real-robot aggregate</span></div><div><strong>170 / 240</strong><span>ASRR successes</span></div>'
         : '<div><strong>+14.4 pp</strong><span>pi0.5 mean gain</span></div><div><strong>25-63%</strong><span>less recorded compute</span></div>'}
-      <button type="button" data-open-evidence-library>More evidence <span aria-hidden="true">&#8599;</span></button>
+      <nav class="evidence-links" aria-label="Explore the project">
+        <a href="${homePath}#videos" data-page-section>View videos <span aria-hidden="true">&#8595;</span></a>
+        <a href="${homePath}#results" data-page-section>View results <span aria-hidden="true">&#8595;</span></a>
+      </nav>
     </div>
   </div>`, "Recorded + measured");
 }
@@ -293,9 +305,9 @@ function renderInspector(inspectorElement, state) {
     ${inspectorControls(state)}`;
 }
 
-export function renderScene(stageElement, inspectorElement, state) {
+export function renderScene(stageElement, inspectorElement, state, options = {}) {
   const scenes = [localErrorScene, editableInterfaceScene, residualScene, evidenceScene];
-  stageElement.innerHTML = scenes[state.chapterIndex](state);
+  stageElement.innerHTML = scenes[state.chapterIndex](state, options);
   renderInspector(inspectorElement, state);
 }
 

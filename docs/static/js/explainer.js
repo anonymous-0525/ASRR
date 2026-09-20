@@ -369,7 +369,7 @@ export async function mountExplainer(root, {
   function updateChrome(scene, controllerState) {
     const evidenceChanged = scene.chapterIndex === 3 && renderedEvidenceCase !== scene.evidenceCaseId;
     if (scene.chapterIndex !== 3 || evidenceChanged) {
-      renderScene(elements.stage, elements.inspector, scene);
+      renderScene(elements.stage, elements.inspector, scene, { homePath: mode === "standalone" ? "./" : "" });
       renderedEvidenceCase = scene.chapterIndex === 3 ? scene.evidenceCaseId : null;
       if (scene.chapterIndex === 3) ensureAuthoredEvidence(scene);
     }
@@ -479,28 +479,10 @@ export async function mountExplainer(root, {
     }
   }
 
-  function openEvidenceLibrary() {
-    controller.pause();
-    modalMedia.pause();
-    elements.mediaPair.replaceChildren();
-    const library = documentRef.createElement("div");
-    library.className = "evidence-library";
-    for (const caseData of evidence.cases.filter((item) => !item.authored)) {
-      const button = documentRef.createElement("button");
-      button.type = "button";
-      button.dataset.evidenceCase = caseData.id;
-      button.innerHTML = `<strong>${caseData.policy}</strong><span>${caseData.task}</span>`;
-      library.append(button);
-    }
-    elements.mediaPair.append(library);
-    elements.mediaStatus.textContent = "Choose another recorded Base and ASRR pair.";
-    elements.retry.hidden = true;
-    if (!elements.dialog.open) elements.dialog.showModal();
-  }
-
   listen(root, "click", (event) => {
-    if (event.target.closest?.("[data-open-evidence-library]")) {
-      openEvidenceLibrary();
+    if (event.target.closest?.("[data-page-section]")) {
+      userPaused = true;
+      controller.pause();
       return;
     }
     const evidenceCase = event.target.closest?.("[data-evidence-case]");

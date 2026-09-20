@@ -79,20 +79,45 @@ test("recorded evidence schedules one simulation and one real pair", () => {
   assert.equal(deriveTourState(TOUR_DURATION_MS).evidenceLocalTimeMs, 15_000);
 });
 
-test("local error starts at a5 and the final Base action misses the ideal target", () => {
+test("Base converges toward the ideal path after a5 but ends just outside the target", () => {
   const { actions } = deriveTourState(24_000);
   for (const action of actions.slice(0, 5)) assert.deepEqual(action.base, action.ideal);
   assert.ok(actions[5].base[1] - actions[5].ideal[1] > 0.25);
-  assert.ok(actions[7].base[1] - actions[7].ideal[1] > 0.2);
-  for (const action of actions) {
-    assert.ok(action.refined.every((value, coordinate) => Math.abs(value - action.ideal[coordinate]) < 1e-12));
+  for (let index = 6; index < 8; index += 1) {
+    const current = actions[index];
+    const previous = actions[index - 1];
+    assert.ok(current.base[1] < previous.base[1]);
+    assert.ok(current.base[1] - current.ideal[1] < previous.base[1] - previous.ideal[1]);
   }
+  const endpointGap = (actions[7].base[1] - actions[7].ideal[1]) * 350;
+  assert.ok(endpointGap > 30 && endpointGap < 46, "Base endpoint clears the target edge by a small visible margin");
 });
 
-test("manual action inspection puts both robot wrists on the selected action", () => {
+test("refinement corrects local errors without exactly reproducing the ideal trajectory", () => {
+  const { actions } = deriveTourState(70_000);
+  for (const action of actions.slice(5)) {
+    const distance = (point) => Math.hypot(...point.map((value, i) => value - action.ideal[i]));
+    assert.ok(distance(action.refined) > 0.01);
+    assert.ok(distance(action.refined) < distance(action.base));
+  }
+  const end = actions[7];
+  assert.ok(Math.abs(end.refined[0] - end.ideal[0]) * 760 < 26);
+  assert.ok(Math.abs(end.refined[1] - end.ideal[1]) * 350 < 23);
+});
+
+test("manual action inspection synchronizes Base, refined, and ideal wrists", () => {
   const state = deriveTourState(67_000, { selectedStep: 5 });
   assert.deepEqual(state.arm.base, state.actions[5].base);
   assert.deepEqual(state.arm.refined, state.actions[5].refined);
+  assert.deepEqual(state.arm.ideal, state.actions[5].ideal);
+});
+
+test("the ideal arm interpolates on its own trajectory at the same action position", () => {
+  const state = deriveTourState(12_500);
+  assert.equal(state.actionPosition, 5.5);
+  assert.deepEqual(state.arm.ideal, state.actions[5].ideal.map((value, index) =>
+    (value + state.actions[6].ideal[index]) / 2));
+  assert.notDeepEqual(state.arm.ideal, state.arm.base);
 });
 
 test("arbitrary seeks preserve stable action identities", () => {

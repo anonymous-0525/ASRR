@@ -62,6 +62,7 @@ test("local error renders every labelled action and begins the active sequence a
 
   assert.equal(state.selectedActionId, "a3");
   assert.match(stage.innerHTML, /data-arm="active"/);
+  assert.match(stage.innerHTML, /data-arm="ideal-ghost"/);
   assert.match(stage.innerHTML, /data-path="ideal"/);
   assert.match(stage.innerHTML, /Local error at a5/);
   assert.match(stage.innerHTML, /missed target/);
@@ -104,6 +105,8 @@ test("editable interface contrasts policy updates with proposal editing", () => 
   assert.match(stage.innerHTML, /Editable action proposal/);
   assert.equal((stage.innerHTML.match(/data-action-label=/g) ?? []).length, 16);
   assert.match(stage.innerHTML, /trajectory--refined/);
+  assert.equal((stage.innerHTML.match(/data-arm="ideal-ghost"/g) ?? []).length, 2);
+  assert.equal((stage.innerHTML.match(/data-path="ideal"/g) ?? []).length, 2);
   assert.doesNotMatch(stage.innerHTML, /token-strip/);
 });
 
@@ -115,6 +118,8 @@ test("residual scene overlays both arms and exposes policy data only for ASRR-C"
   assert.match(stage.innerHTML, /residual-mode-row--A/);
   assert.match(stage.innerHTML, /data-arm="base-ghost"/);
   assert.match(stage.innerHTML, /data-arm="refined"/);
+  assert.match(stage.innerHTML, /data-path="ideal"/);
+  assert.doesNotMatch(stage.innerHTML, /data-arm="ideal-ghost"/);
   assert.match(stage.innerHTML, /residual-curve/);
   assert.doesNotMatch(stage.innerHTML, /data-context-path/);
   assert.doesNotMatch(stage.innerHTML, /Policy-side data/);
@@ -128,6 +133,20 @@ test("residual scene overlays both arms and exposes policy data only for ASRR-C"
   assert.match(stage.innerHTML, /Native execution preserved/);
   assert.match(stage.innerHTML, /data-policy-state-at="a5"/);
   assert.match(stage.innerHTML, /Policy state used at a5/);
+});
+
+test("recorded evidence links directly to homepage videos and results in both modes", () => {
+  const stage = new FakeElement();
+  const inspector = new FakeElement();
+  for (const time of [79_000, 94_000, TOUR_DURATION_MS]) {
+    renderScene(stage, inspector, deriveTourState(time));
+    assert.match(stage.innerHTML, /href="\.\/#videos"/);
+    assert.match(stage.innerHTML, /href="\.\/#results"/);
+    assert.doesNotMatch(stage.innerHTML, /More evidence|data-open-evidence-library/);
+    renderScene(stage, inspector, deriveTourState(time), { homePath: "" });
+    assert.match(stage.innerHTML, /href="#videos"/);
+    assert.match(stage.innerHTML, /href="#results"/);
+  }
 });
 
 test("manual variant and before state never mutate authored time", () => {

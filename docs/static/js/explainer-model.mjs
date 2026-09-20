@@ -14,8 +14,8 @@ const BASE_POINTS = [
   [0.43, 0.42],
   [0.55, 0.33],
   [0.65, 0.53],
-  [0.79, 0.43],
-  [0.91, 0.38],
+  [0.79, 0.29],
+  [0.91, 0.225],
 ];
 
 const IDEAL_POINTS = [
@@ -23,6 +23,13 @@ const IDEAL_POINTS = [
   [0.65, 0.22],
   [0.79, 0.15],
   [0.91, 0.13],
+];
+
+const REFINED_POINTS = [
+  ...BASE_POINTS.slice(0, 5),
+  [0.66, 0.26],
+  [0.80, 0.185],
+  [0.90, 0.155],
 ];
 
 const STEP_CONTEXT = [0.12, 0.17, 0.24, 0.36, 0.58, 0.91, 0.54, 0.2];
@@ -38,7 +45,7 @@ export const TEACHING_SEQUENCE = Object.freeze(
       index,
       base: freezePoint(base),
       ideal: freezePoint(IDEAL_POINTS[index]),
-      residual: freezePoint(IDEAL_POINTS[index].map((value, coordinate) => value - base[coordinate])),
+      residual: freezePoint(REFINED_POINTS[index].map((value, coordinate) => value - base[coordinate])),
       mask: freezePoint([1, 1]),
       bound: freezePoint([0.35, 0.35]),
       context: STEP_CONTEXT[index],
@@ -155,6 +162,7 @@ export function deriveTourState(timeMs, overrides = {}) {
     arm: {
       base: interpolateAction(actions, actionPosition, "base"),
       refined: interpolateAction(actions, actionPosition, "refined"),
+      ideal: interpolateAction(actions, actionPosition, "ideal"),
     },
     evidenceCaseId,
     evidenceLocalTimeMs,
@@ -176,7 +184,7 @@ export function validateTeachingState(state) {
   if (!Number.isInteger(state.selectedStep) || !state.actions[state.selectedStep]) return false;
   if (!Number.isInteger(state.visitedThrough) || state.visitedThrough < -1 || state.visitedThrough > 7) return false;
   if (state.selectedActionId !== state.actions[state.selectedStep].id) return false;
-  if (!state.arm || state.arm.base.length !== 2 || state.arm.refined.length !== 2) return false;
+  if (!state.arm || ["base", "refined", "ideal"].some((key) => state.arm[key]?.length !== 2)) return false;
   if (state.variant === "A" && state.context !== null) return false;
   if (state.variant === "C" && !state.context) return false;
   return true;

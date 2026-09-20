@@ -38,6 +38,11 @@ https://anonymous-0525.github.io/ASRR/
 - The first three chapters last 25 seconds each: Local Error, Editable Interface,
   and Residual Refinement. Recorded Evidence retains 30 seconds, presenting
   pi0.5 / LIBERO-10 followed by Piper / Corn-to-plate.
+- The blue ideal, yellow Base, and green refined trajectories are distinct.
+  The Base approaches but misses the target; refinement reaches the target with
+  a small remaining offset from the ideal. Transparent arms follow the ideal in
+  the first two chapters and the Base in the residual comparison. Recorded
+  Evidence links directly to the homepage videos and results.
 - When refreshing figures or the paper PDF, run the standard-library tests from
   the repository root:
 

@@ -7,7 +7,11 @@ import {
   renderChapterTabs,
   renderScene,
 } from "../docs/static/js/explainer-scenes.mjs";
-import { createTourController, mountMediaPair } from "../docs/static/js/explainer.js";
+import {
+  bindBeforeAfterRelease,
+  createTourController,
+  mountMediaPair,
+} from "../docs/static/js/explainer.js";
 
 class FakeElement {
   constructor() {
@@ -210,4 +214,21 @@ test("retry remount replaces stale visible media nodes", () => {
   assert.equal(container.children.length, 2);
   assert.equal(container.children[0].children[0], videos[0]);
   assert.equal(container.children[1].children[0], videos[1]);
+});
+
+test("document-level pointer release clears a redrawn Before control", () => {
+  const listeners = new Map();
+  const documentRef = {
+    addEventListener(type, listener) { listeners.set(type, listener); },
+  };
+  let before = true;
+  const controller = {
+    getState: () => ({ scene: { before } }),
+    setBefore(value) { before = value; },
+  };
+  bindBeforeAfterRelease(documentRef, controller);
+
+  listeners.get("pointerup")({});
+
+  assert.equal(before, false);
 });

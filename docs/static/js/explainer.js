@@ -265,6 +265,17 @@ export function mountMediaPair(container, videos, documentRef = document) {
   }
 }
 
+export function bindBeforeAfterRelease(documentRef, controller) {
+  const release = () => {
+    if (controller.getState()?.scene.before) controller.setBefore(false);
+  };
+  documentRef.addEventListener("pointerup", release);
+  documentRef.addEventListener("pointercancel", release);
+  documentRef.addEventListener("keyup", (event) => {
+    if (new Set(["Space", "Enter"]).has(event.code)) release();
+  });
+}
+
 async function initializeBrowserExplainer() {
   const elements = {
     tabs: document.getElementById("chapter-tabs"),
@@ -320,6 +331,7 @@ async function initializeBrowserExplainer() {
     storage: window.localStorage,
     clock,
   });
+  bindBeforeAfterRelease(document, controller);
 
   for (const control of [elements.play, elements.replay, elements.timeline, elements.theme]) control.disabled = false;
 

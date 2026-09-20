@@ -7,12 +7,48 @@ import {
   renderChapterTabs,
   renderScene,
 } from "../docs/static/js/explainer-scenes.mjs";
+import { createTourController } from "../docs/static/js/explainer.js";
 
 class FakeElement {
   constructor() {
     this.innerHTML = "";
     this.textContent = "";
   }
+}
+
+function makeClock(initial = 0) {
+  let timeMs = initial;
+  let playing = false;
+  const listeners = new Set();
+  const emit = () => listeners.forEach((listener) => listener(timeMs, playing));
+  return {
+    getTimeMs: () => timeMs,
+    isPlaying: () => playing,
+    play() { playing = true; emit(); },
+    pause() { playing = false; emit(); },
+    seek(next) { timeMs = next; emit(); },
+    subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
+    tick(next) { timeMs = next; emit(); },
+  };
+}
+
+function makeController(initial = 0, storedTheme = null) {
+  const clock = makeClock(initial);
+  const renders = [];
+  const stored = new Map(storedTheme ? [["asrr-explainer-theme", storedTheme]] : []);
+  const storage = {
+    getItem: (key) => stored.get(key) ?? null,
+    setItem: (key, value) => stored.set(key, value),
+  };
+  const media = { sync() {}, pause() {} };
+  const controller = createTourController({
+    model: { deriveTourState },
+    renderer: (state) => renders.push(state),
+    media,
+    storage,
+    clock,
+  });
+  return { controller, clock, renders, stored };
 }
 
 test("selected action identity is linked across trajectory and token views", () => {
@@ -70,4 +106,83 @@ test("every chapter names takeaway, input, change, and evidence type", () => {
     assert.match(inspector.innerHTML, /Change/);
     assert.match(inspector.innerHTML, /Evidence/);
   }
+});
+
+test("play, pause, seek, and end state follow the shared clock", () => {
+  const { controller, clock } = makeController();
+  controller.play();
+  assert.equal(controller.getState().playing, true);
+  clock.tick(45_000);
+  assert.equal(controller.getState().timeMs, 45_000);
+  controller.pause();
+  assert.equal(controller.getState().playing, false);
+  controller.seek(12_000);
+  assert.equal(controller.getState().timeMs, 12_000);
+  controller.seek(99_000);
+  assert.equal(controller.getState().timeMs, 90_000);
+  assert.equal(controller.getState().playing, false);
+  assert.equal(controller.getState().atEnd, true);
+});
+
+test("chapter navigation and replay use authored boundaries", () => {
+  const { controller } = makeController(43_000);
+  controller.nextChapter();
+  assert.equal(controller.getState().timeMs, 55_000);
+  controller.previousChapter();
+  assert.equal(controller.getState().timeMs, 31_000);
+  controller.seek(48_000);
+  controller.replayChapter();
+  assert.equal(controller.getState().timeMs, 31_000);
+});
+
+test("manual inspection pauses and play restores authored state", () => {
+  const { controller } = makeController(43_000);
+  controller.play();
+  controller.setVariant("A");
+  controller.selectStep(7);
+  controller.setBefore(true);
+
+  const manual = controller.getState();
+  assert.equal(manual.playing, false);
+  assert.equal(manual.scene.variant, "A");
+  assert.equal(manual.scene.selectedStep, 7);
+  assert.equal(manual.scene.before, true);
+
+  controller.play();
+  const restored = controller.getState();
+  assert.equal(restored.scene.variant, deriveTourState(43_000).variant);
+  assert.equal(restored.scene.selectedStep, deriveTourState(43_000).selectedStep);
+  assert.equal(restored.scene.before, false);
+});
+
+test("hidden tab and Space outside a form control pause or resume", () => {
+  const { controller } = makeController();
+  controller.play();
+  controller.onVisibilityChange(true);
+  assert.equal(controller.getState().playing, false);
+
+  let prevented = false;
+  controller.handleKey({ code: "Space", target: { tagName: "DIV" }, preventDefault() { prevented = true; } });
+  assert.equal(prevented, true);
+  assert.equal(controller.getState().playing, true);
+
+  controller.handleKey({ code: "Space", target: { tagName: "INPUT" }, preventDefault() { throw new Error("should not run"); } });
+  assert.equal(controller.getState().playing, true);
+});
+
+test("invalid stored theme falls back to dark and explicit changes persist", () => {
+  const { controller, stored } = makeController(0, "sepia");
+  assert.equal(controller.getState().theme, "dark");
+  controller.setTheme("light");
+  assert.equal(controller.getState().theme, "light");
+  assert.equal(stored.get("asrr-explainer-theme"), "light");
+});
+
+test("an external clock adapter drives the same scene state", () => {
+  const { controller } = makeController();
+  const external = makeClock(72_000);
+  controller.setExternalClock(external);
+  assert.equal(controller.getState().scene.chapterIndex, 4);
+  external.seek(18_000);
+  assert.equal(controller.getState().scene.chapterIndex, 1);
 });

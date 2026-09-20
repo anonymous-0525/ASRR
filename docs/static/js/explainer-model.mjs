@@ -1,11 +1,10 @@
-export const TOUR_DURATION_MS = 90_000;
+export const TOUR_DURATION_MS = 120_000;
 
 export const CHAPTERS = Object.freeze([
-  { index: 0, id: "local-error", label: "Local Error", startMs: 0, endMs: 16_000 },
-  { index: 1, id: "editable-proposal", label: "Editable Proposal", startMs: 16_000, endMs: 31_000 },
-  { index: 2, id: "residual-refinement", label: "Residual Refinement", startMs: 31_000, endMs: 55_000 },
-  { index: 3, id: "native-execution", label: "Native Execution", startMs: 55_000, endMs: 70_000 },
-  { index: 4, id: "evidence", label: "Evidence", startMs: 70_000, endMs: 90_000 },
+  { index: 0, id: "local-error", label: "Local Error", startMs: 0, endMs: 30_000 },
+  { index: 1, id: "editable-interface", label: "Editable Interface", startMs: 30_000, endMs: 60_000 },
+  { index: 2, id: "residual-refinement", label: "Residual Refinement", startMs: 60_000, endMs: 90_000 },
+  { index: 3, id: "recorded-evidence", label: "Recorded Evidence", startMs: 90_000, endMs: 120_000 },
 ]);
 
 const BASE_POINTS = [
@@ -83,16 +82,23 @@ export function chapterAtTime(timeMs) {
   ) ?? CHAPTERS[0];
 }
 
+function localErrorStep(progress) {
+  return Math.min(7, Math.floor(clamp(progress, 0, 0.999999) * 8));
+}
+
 function authoredStep(chapterIndex, chapterProgress) {
-  if (chapterIndex === 0) return chapterProgress < 0.42 ? 3 : 5;
-  if (chapterIndex === 1) return Math.min(7, Math.floor(chapterProgress * 8));
-  if (chapterIndex === 2) return chapterProgress < 0.38 ? 4 : 5;
-  if (chapterIndex === 3) return Math.min(7, Math.floor(chapterProgress * 6));
+  if (chapterIndex === 0 || chapterIndex === 1) return localErrorStep(chapterProgress);
+  if (chapterIndex === 2) {
+    const modeProgress = chapterProgress < 0.5
+      ? chapterProgress * 2
+      : (chapterProgress - 0.5) * 2;
+    return localErrorStep(modeProgress);
+  }
   return 5;
 }
 
 function authoredVariant(chapterIndex, chapterProgress) {
-  return chapterIndex === 2 && chapterProgress < 0.34 ? "A" : "C";
+  return chapterIndex === 2 && chapterProgress < 0.5 ? "A" : "C";
 }
 
 export function deriveTourState(timeMs, overrides = {}) {
@@ -108,6 +114,7 @@ export function deriveTourState(timeMs, overrides = {}) {
   const selectedStep = Number.isInteger(overrides.selectedStep)
     ? clamp(overrides.selectedStep, 0, TEACHING_SEQUENCE.length - 1)
     : authoredStep(chapter.index, chapterProgress);
+  const visitedThrough = chapter.index === 0 ? selectedStep - 1 : selectedStep;
   const before = typeof overrides.before === "boolean" ? overrides.before : false;
   const alpha = 1;
 
@@ -128,12 +135,17 @@ export function deriveTourState(timeMs, overrides = {}) {
     chapterProgress,
     variant,
     selectedStep,
+    visitedThrough,
     selectedActionId: actions[selectedStep].id,
     before,
     alpha,
     predictionHorizon: actions.length,
     refinementHorizon: 6,
     actions,
+    arm: {
+      base: [...actions[selectedStep].base],
+      refined: [...actions[selectedStep].refined],
+    },
     context: variant === "C"
       ? {
           global: [0.64, 0.28],
@@ -150,7 +162,9 @@ export function validateTeachingState(state) {
   if (!Array.isArray(state.actions) || state.actions.length !== 8) return false;
   if (state.actions.some((action, index) => action.id !== `a${index}`)) return false;
   if (!Number.isInteger(state.selectedStep) || !state.actions[state.selectedStep]) return false;
+  if (!Number.isInteger(state.visitedThrough) || state.visitedThrough < -1 || state.visitedThrough > 7) return false;
   if (state.selectedActionId !== state.actions[state.selectedStep].id) return false;
+  if (!state.arm || state.arm.base.length !== 2 || state.arm.refined.length !== 2) return false;
   if (state.variant === "A" && state.context !== null) return false;
   if (state.variant === "C" && !state.context) return false;
   return true;

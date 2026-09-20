@@ -22,11 +22,24 @@ test("bounded masked residual edits only declared coordinates", () => {
   assert.deepEqual(refined, [0.4, -0.1, 0.6]);
 });
 
+test("the redesigned tour has four equal 30-second chapters", () => {
+  assert.equal(TOUR_DURATION_MS, 120_000);
+  assert.deepEqual(CHAPTERS.map(({ startMs, endMs }) => [startMs, endMs]), [
+    [0, 30_000],
+    [30_000, 60_000],
+    [60_000, 90_000],
+    [90_000, 120_000],
+  ]);
+  assert.equal(chapterAtTime(30_000).id, "editable-interface");
+  assert.equal(chapterAtTime(60_000).id, "residual-refinement");
+  assert.equal(chapterAtTime(90_000).id, "recorded-evidence");
+  assert.equal(chapterAtTime(120_000).id, "recorded-evidence");
+});
+
 test("tour boundaries always resolve to a valid chapter", () => {
-  assert.equal(TOUR_DURATION_MS, 90_000);
-  assert.equal(CHAPTERS.length, 5);
+  assert.equal(CHAPTERS.length, 4);
   assert.equal(chapterAtTime(-1).index, 0);
-  assert.equal(chapterAtTime(90_000).index, 4);
+  assert.equal(chapterAtTime(120_000).index, 3);
 
   for (const chapter of CHAPTERS) {
     const state = deriveTourState(chapter.startMs);
@@ -35,8 +48,19 @@ test("tour boundaries always resolve to a valid chapter", () => {
   }
 });
 
+test("local error walks from a0 through a7 without skipping", () => {
+  assert.equal(deriveTourState(0).selectedActionId, "a0");
+  assert.equal(deriveTourState(29_999).selectedActionId, "a7");
+
+  for (let index = 0; index < 8; index += 1) {
+    const state = deriveTourState(index * 3_750 + 1);
+    assert.equal(state.selectedStep, index);
+    assert.equal(state.visitedThrough, index - 1);
+  }
+});
+
 test("arbitrary seeks preserve stable action identities", () => {
-  const times = [90_000, 12_000, 55_000, 31_000, 0, 72_500];
+  const times = [120_000, 12_000, 90_000, 60_000, 0, 105_000];
   const identities = times.map((timeMs) =>
     deriveTourState(timeMs).actions.map(({ id }) => id),
   );
@@ -47,8 +71,8 @@ test("arbitrary seeks preserve stable action identities", () => {
 });
 
 test("action-only and context-conditioned variants expose declared context", () => {
-  const actionOnly = deriveTourState(43_000, { variant: "A" });
-  const conditioned = deriveTourState(43_000, { variant: "C" });
+  const actionOnly = deriveTourState(70_000, { variant: "A" });
+  const conditioned = deriveTourState(70_000, { variant: "C" });
 
   assert.equal(actionOnly.context, null);
   assert.ok(conditioned.context);

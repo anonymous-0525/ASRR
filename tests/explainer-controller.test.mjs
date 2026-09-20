@@ -58,7 +58,7 @@ function makeController(initial = 0, storedTheme = null) {
 test("selected action identity is linked across trajectory and token views", () => {
   const stage = new FakeElement();
   const inspector = new FakeElement();
-  const state = deriveTourState(43_000, { selectedStep: 5 });
+  const state = deriveTourState(70_000, { selectedStep: 5 });
 
   renderScene(stage, inspector, state);
 
@@ -71,17 +71,17 @@ test("action-only scene omits context while conditioned scene exposes it", () =>
   const stage = new FakeElement();
   const inspector = new FakeElement();
 
-  renderScene(stage, inspector, deriveTourState(43_000, { variant: "A" }));
+  renderScene(stage, inspector, deriveTourState(70_000, { variant: "A" }));
   assert.doesNotMatch(stage.innerHTML, /data-context-path/);
   assert.doesNotMatch(stage.innerHTML, /Policy context/);
 
-  renderScene(stage, inspector, deriveTourState(43_000, { variant: "C" }));
+  renderScene(stage, inspector, deriveTourState(70_000, { variant: "C" }));
   assert.match(stage.innerHTML, /data-context-path/);
   assert.match(stage.innerHTML, /Policy context/);
 });
 
 test("manual variant and before state never mutate authored time", () => {
-  const authored = deriveTourState(43_000);
+  const authored = deriveTourState(70_000);
   const manual = { ...authored, variant: "A", before: true, selectedStep: 5 };
   assert.equal(manual.timeMs, authored.timeMs);
 
@@ -95,15 +95,15 @@ test("chapter tabs and descriptions follow derived state", () => {
   const state = deriveTourState(60_000);
   renderChapterTabs(tabs, state);
 
-  assert.equal((tabs.innerHTML.match(/data-chapter-index=/g) ?? []).length, 5);
-  assert.match(tabs.innerHTML, /aria-current="step"[^>]*>.*Native Execution/s);
-  assert.match(describeState(state), /Native Execution/);
+  assert.equal((tabs.innerHTML.match(/data-chapter-index=/g) ?? []).length, 4);
+  assert.match(tabs.innerHTML, /aria-current="step"[^>]*>.*Residual Refinement/s);
+  assert.match(describeState(state), /Residual Refinement/);
 });
 
 test("every chapter names takeaway, input, change, and evidence type", () => {
   const stage = new FakeElement();
   const inspector = new FakeElement();
-  for (const timeMs of [1_000, 18_000, 38_000, 58_000, 75_000]) {
+  for (const timeMs of [1_000, 31_000, 61_000, 91_000]) {
     renderScene(stage, inspector, deriveTourState(timeMs));
     assert.match(inspector.innerHTML, /Takeaway/);
     assert.match(inspector.innerHTML, /Input/);
@@ -122,25 +122,25 @@ test("play, pause, seek, and end state follow the shared clock", () => {
   assert.equal(controller.getState().playing, false);
   controller.seek(12_000);
   assert.equal(controller.getState().timeMs, 12_000);
-  controller.seek(99_000);
-  assert.equal(controller.getState().timeMs, 90_000);
+  controller.seek(129_000);
+  assert.equal(controller.getState().timeMs, 120_000);
   assert.equal(controller.getState().playing, false);
   assert.equal(controller.getState().atEnd, true);
 });
 
 test("chapter navigation and replay use authored boundaries", () => {
-  const { controller } = makeController(43_000);
+  const { controller } = makeController(70_000);
   controller.nextChapter();
-  assert.equal(controller.getState().timeMs, 55_000);
+  assert.equal(controller.getState().timeMs, 90_000);
   controller.previousChapter();
-  assert.equal(controller.getState().timeMs, 31_000);
-  controller.seek(48_000);
+  assert.equal(controller.getState().timeMs, 60_000);
+  controller.seek(78_000);
   controller.replayChapter();
-  assert.equal(controller.getState().timeMs, 31_000);
+  assert.equal(controller.getState().timeMs, 60_000);
 });
 
 test("manual inspection pauses and play restores authored state", () => {
-  const { controller } = makeController(43_000);
+  const { controller } = makeController(70_000);
   controller.play();
   controller.setVariant("A");
   controller.selectStep(7);
@@ -154,8 +154,8 @@ test("manual inspection pauses and play restores authored state", () => {
 
   controller.play();
   const restored = controller.getState();
-  assert.equal(restored.scene.variant, deriveTourState(43_000).variant);
-  assert.equal(restored.scene.selectedStep, deriveTourState(43_000).selectedStep);
+  assert.equal(restored.scene.variant, deriveTourState(70_000).variant);
+  assert.equal(restored.scene.selectedStep, deriveTourState(70_000).selectedStep);
   assert.equal(restored.scene.before, false);
 });
 
@@ -184,10 +184,10 @@ test("invalid stored theme falls back to dark and explicit changes persist", () 
 
 test("an external clock adapter drives the same scene state", () => {
   const { controller } = makeController();
-  const external = makeClock(72_000);
+  const external = makeClock(105_000);
   controller.setExternalClock(external);
-  assert.equal(controller.getState().scene.chapterIndex, 4);
-  external.seek(18_000);
+  assert.equal(controller.getState().scene.chapterIndex, 3);
+  external.seek(32_000);
   assert.equal(controller.getState().scene.chapterIndex, 1);
 });
 

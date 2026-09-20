@@ -1,4 +1,5 @@
 from html.parser import HTMLParser
+import json
 from pathlib import Path
 import re
 import unittest
@@ -25,6 +26,43 @@ class PageParser(HTMLParser):
 
 
 class StaticSiteTests(unittest.TestCase):
+    def test_explainer_evidence_manifest_is_complete(self):
+        manifest_path = DOCS / "static/data/explainer-evidence.json"
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+        self.assertEqual({"metrics", "cases"}, set(payload))
+        self.assertEqual(
+            {
+                "pi05_mean_gain_pp": 14.4,
+                "pi05_5k_success": [62.0, 80.9],
+                "recorded_compute_reduction_percent": [25, 63],
+                "real_robot_gain_pp": 6.7,
+            },
+            payload["metrics"],
+        )
+        self.assertEqual(
+            {"pi05-libero10", "openvla-goal", "corn", "holder", "stack"},
+            {case["id"] for case in payload["cases"]},
+        )
+        self.assertEqual(len(payload["cases"]), len({case["id"] for case in payload["cases"]}))
+
+        case_keys = {
+            "id", "policy", "task", "kind", "baseVideo", "asrrVideo",
+            "basePoster", "asrrPoster", "playbackRate", "note",
+        }
+        for case in payload["cases"]:
+            with self.subTest(case=case["id"]):
+                self.assertEqual(case_keys, set(case))
+                self.assertIn(case["kind"], {"simulation", "real_robot"})
+                self.assertGreater(case["playbackRate"], 0)
+                self.assertTrue(case["note"].strip())
+                self.assertNotRegex(case["policy"], r"Octo|SmolVLA")
+                for key in ("baseVideo", "asrrVideo", "basePoster", "asrrPoster"):
+                    ref = case[key]
+                    self.assertFalse(Path(ref).is_absolute(), (case["id"], key))
+                    self.assertNotIn("..", Path(ref).parts, (case["id"], key))
+                    self.assertTrue((DOCS / ref).is_file(), (case["id"], key))
+
     def test_local_page_references_exist(self):
         html_path = DOCS / "index.html"
         parser = PageParser()

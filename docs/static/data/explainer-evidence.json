@@ -1,0 +1,70 @@
+{
+  "metrics": {
+    "pi05_mean_gain_pp": 14.4,
+    "pi05_5k_success": [62.0, 80.9],
+    "recorded_compute_reduction_percent": [25, 63],
+    "real_robot_gain_pp": 6.7
+  },
+  "cases": [
+    {
+      "id": "pi05-libero10",
+      "policy": "pi0.5",
+      "task": "LIBERO-10 rescue",
+      "kind": "simulation",
+      "baseVideo": "static/videos/vla_rescues/pi05_libero10_base.mp4",
+      "asrrVideo": "static/videos/vla_rescues/pi05_libero10_asrr.mp4",
+      "basePoster": "static/images/explainer/pi05-base.png",
+      "asrrPoster": "static/images/explainer/pi05-asrr.png",
+      "playbackRate": 1,
+      "note": "Recorded paired rollout: the refined proposal completes the placement after the base rollout fails."
+    },
+    {
+      "id": "openvla-goal",
+      "policy": "OpenVLA-OFT",
+      "task": "LIBERO Goal rescue",
+      "kind": "simulation",
+      "baseVideo": "static/videos/vla_rescues/openvla_oft_goal_primary_base.mp4",
+      "asrrVideo": "static/videos/vla_rescues/openvla_oft_goal_primary_refined.mp4",
+      "basePoster": "static/images/explainer/openvla-base.png",
+      "asrrPoster": "static/images/explainer/openvla-asrr.png",
+      "playbackRate": 1,
+      "note": "Recorded paired rollout from the high-success OpenVLA-OFT evaluation."
+    },
+    {
+      "id": "corn",
+      "policy": "Piper pi0.5",
+      "task": "Corn to plate",
+      "kind": "real_robot",
+      "baseVideo": "static/videos/real_robot_tasks/corn_to_plate_base.mp4",
+      "asrrVideo": "static/videos/real_robot_tasks/corn_to_plate_asrr.mp4",
+      "basePoster": "static/images/explainer/corn-base.png",
+      "asrrPoster": "static/images/explainer/corn-asrr.png",
+      "playbackRate": 3,
+      "note": "Recorded physical execution shown at 3x playback."
+    },
+    {
+      "id": "holder",
+      "policy": "Piper pi0.5",
+      "task": "Block to holder",
+      "kind": "real_robot",
+      "baseVideo": "static/videos/real_robot_tasks/block_to_holder_base.mp4",
+      "asrrVideo": "static/videos/real_robot_tasks/block_to_holder_asrr.mp4",
+      "basePoster": "static/images/explainer/holder-base.png",
+      "asrrPoster": "static/images/explainer/holder-asrr.png",
+      "playbackRate": 3,
+      "note": "Recorded physical execution shown at 3x playback."
+    },
+    {
+      "id": "stack",
+      "policy": "Piper pi0.5",
+      "task": "Block stacking",
+      "kind": "real_robot",
+      "baseVideo": "static/videos/real_robot_tasks/block_stacking_base.mp4",
+      "asrrVideo": "static/videos/real_robot_tasks/block_stacking_asrr.mp4",
+      "basePoster": "static/images/explainer/stack-base.png",
+      "asrrPoster": "static/images/explainer/stack-asrr.png",
+      "playbackRate": 3,
+      "note": "Recorded physical execution shown at 3x playback."
+    }
+  ]
+}

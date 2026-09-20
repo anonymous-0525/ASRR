@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A 90-second interactive explanation of Action Sequence Residual Refinement.">
+  <meta name="author" content="Anonymous ICRA 2027 Submission">
+  <title>Explore ASRR</title>
+  <link rel="stylesheet" href="static/css/explainer.css">
+</head>
+<body>
+  <div class="explainer-app">
+    <header class="app-header">
+      <a class="back-link" href="index.html" aria-label="Return to the ASRR project page">
+        <span aria-hidden="true">&#8592;</span>
+        <span>Project page</span>
+      </a>
+      <div class="app-title">
+        <strong>ASRR</strong>
+        <span>Action sequence refinement, step by step</span>
+      </div>
+      <button id="theme-toggle" class="icon-command" type="button" aria-label="Switch to light theme" title="Switch theme" disabled>
+        <span aria-hidden="true">&#9788;</span>
+      </button>
+    </header>
+
+    <nav id="chapter-tabs" class="chapter-tabs" aria-label="Explainer chapters">
+      <button type="button" data-chapter-index="0" aria-current="step" disabled><span>01</span>Local Error</button>
+      <button type="button" data-chapter-index="1" disabled><span>02</span>Editable Proposal</button>
+      <button type="button" data-chapter-index="2" disabled><span>03</span>Residual Refinement</button>
+      <button type="button" data-chapter-index="3" disabled><span>04</span>Native Execution</button>
+      <button type="button" data-chapter-index="4" disabled><span>05</span>Evidence</button>
+    </nav>
+
+    <main class="workbench">
+      <section class="stage-panel" aria-labelledby="stage-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="overline">Illustrative action-space projection</p>
+            <h1 id="stage-heading">A useful proposal with one local error</h1>
+          </div>
+          <span class="evidence-label evidence-label--illustrative">Illustrative</span>
+        </div>
+        <div id="stage" class="stage-viewport" tabindex="0" aria-label="ASRR animated explanation stage">
+          <svg class="stage-fallback" viewBox="0 0 900 480" role="img" aria-labelledby="fallback-title fallback-desc">
+            <title id="fallback-title">Base and refined action trajectories</title>
+            <desc id="fallback-desc">A base action sequence approaches a target with a local error. A bounded residual moves the selected action toward a refined trajectory.</desc>
+            <path class="fallback-grid" d="M70 390H840M70 310H840M70 230H840M70 150H840M170 70V420M330 70V420M490 70V420M650 70V420M810 70V420"/>
+            <path class="fallback-base" d="M95 365 C250 315 350 250 475 220 S650 240 795 115"/>
+            <path class="fallback-refined" d="M95 365 C250 315 350 250 475 220 S650 170 795 115"/>
+            <path class="fallback-residual" d="M620 224 L638 169"/>
+            <circle class="fallback-error" cx="620" cy="224" r="12"/>
+            <circle class="fallback-target" cx="795" cy="115" r="20"/>
+          </svg>
+          <noscript><p class="stage-message">Enable JavaScript to play and inspect the guided explanation.</p></noscript>
+        </div>
+      </section>
+
+      <aside id="inspector" class="inspector" aria-label="Current ASRR operation">
+        <div class="inspector__header">
+          <p class="overline">Current operation</p>
+          <span class="chapter-index">01 / 05</span>
+        </div>
+        <h2>Locate the execution error</h2>
+        <p class="inspector__takeaway">Most of the predicted sequence is already useful. The highlighted timestep introduces a local deviation near task completion.</p>
+
+        <dl class="operation-list">
+          <div><dt>Input</dt><dd>Frozen policy proposal <var>A<sub>base</sub></var></dd></div>
+          <div><dt>Change</dt><dd>Inspect timestep <code>a5</code></dd></div>
+          <div><dt>Evidence</dt><dd>Teaching values, not exported activations</dd></div>
+        </dl>
+
+        <div class="inspector__formula" aria-label="ASRR composition formula">
+          <span>A<sub>refined</sub></span>
+          <span>=</span>
+          <span>A<sub>base</sub></span>
+          <span>+</span>
+          <span class="formula-residual">&alpha;(M &#8857; &Delta;A)</span>
+        </div>
+
+        <div id="variant-toggle" class="segmented-control" aria-label="Refiner input variant">
+          <button type="button" data-variant="A" aria-pressed="false" disabled>ASRR-A</button>
+          <button type="button" data-variant="C" aria-pressed="true" disabled>ASRR-C</button>
+        </div>
+
+        <button id="before-after" class="hold-command" type="button" aria-pressed="false" disabled>
+          <span aria-hidden="true">&#8644;</span>
+          Hold for Base proposal
+        </button>
+      </aside>
+    </main>
+
+    <footer class="playback" aria-label="Guided tour playback">
+      <div class="playback__commands">
+        <button id="previous-chapter" class="icon-command" type="button" aria-label="Previous chapter" title="Previous chapter" disabled><span aria-hidden="true">&#124;&#9664;</span></button>
+        <button id="play-toggle" class="play-command" type="button" aria-label="Play guided tour" disabled><span aria-hidden="true">&#9654;</span><span>Play</span></button>
+        <button id="next-chapter" class="icon-command" type="button" aria-label="Next chapter" title="Next chapter" disabled><span aria-hidden="true">&#9654;&#124;</span></button>
+        <button id="replay-chapter" class="icon-command" type="button" aria-label="Replay current chapter" title="Replay chapter" disabled><span aria-hidden="true">&#8634;</span></button>
+      </div>
+      <label class="timeline-wrap" for="tour-timeline">
+        <span class="sr-only">Tour timeline</span>
+        <input id="tour-timeline" type="range" min="0" max="90000" value="0" step="100" disabled>
+        <span class="timeline-chapters" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      </label>
+      <output id="elapsed-time" class="elapsed-time" for="tour-timeline">00:00 / 01:30</output>
+    </footer>
+  </div>
+
+  <dialog id="media-dialog" class="media-dialog" aria-labelledby="media-dialog-title">
+    <div class="dialog-heading">
+      <div><p class="overline">Recorded execution</p><h2 id="media-dialog-title">Evidence comparison</h2></div>
+      <button class="icon-command" type="button" data-dialog-close aria-label="Close evidence comparison" title="Close"><span aria-hidden="true">&#10005;</span></button>
+    </div>
+    <div id="media-pair" class="media-pair"></div>
+    <p id="media-status" class="media-status" role="status">Select an evidence case to load its recorded Base and ASRR rollouts.</p>
+    <button id="media-retry" class="retry-command" type="button" hidden>Retry media</button>
+  </dialog>
+
+  <p id="tour-status" class="sr-only" aria-live="polite">ASRR explainer ready.</p>
+  <script type="module" src="static/js/explainer.js"></script>
+</body>
+</html>

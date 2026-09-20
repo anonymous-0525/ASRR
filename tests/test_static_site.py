@@ -25,7 +25,37 @@ class PageParser(HTMLParser):
                 self.refs.append((tag, key, value))
 
 
+def parse_page(path):
+    parser = PageParser()
+    parser.feed(path.read_text(encoding="utf-8"))
+    return parser
+
+
 class StaticSiteTests(unittest.TestCase):
+    def test_explainer_shell_has_required_controls_and_local_resources(self):
+        html_path = DOCS / "explainer.html"
+        html = html_path.read_text(encoding="utf-8")
+        parser = parse_page(html_path)
+
+        required_ids = {
+            "chapter-tabs", "stage", "inspector", "play-toggle",
+            "previous-chapter", "next-chapter", "replay-chapter",
+            "tour-timeline", "elapsed-time", "theme-toggle",
+            "variant-toggle", "before-after", "media-dialog", "media-retry",
+        }
+        self.assertTrue(required_ids.issubset(parser.ids), required_ids - parser.ids)
+        self.assertEqual(5, html.count('data-chapter-index="'))
+        self.assertIn('href="static/css/explainer.css"', html)
+        self.assertIn('type="module" src="static/js/explainer.js"', html)
+
+        missing = []
+        for _tag, _key, ref in parser.refs:
+            if ref.startswith(("http://", "https://", "mailto:", "#")):
+                continue
+            if not (DOCS / ref).is_file():
+                missing.append(ref)
+        self.assertEqual([], missing)
+
     def test_explainer_evidence_manifest_is_complete(self):
         manifest_path = DOCS / "static/data/explainer-evidence.json"
         payload = json.loads(manifest_path.read_text(encoding="utf-8"))
